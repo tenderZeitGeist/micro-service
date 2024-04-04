@@ -27,9 +27,17 @@ message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 
-add_executable(${PROJECT_NAME} main.cpp)
+#Subdirs
+add_subdirectory(rest)
+
+#Source files
+set(SOURCE_FILES ${REST_SOURCE_FILES} main.cpp)
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(
 	${PROJECT_NAME}
+	PUBLIC
+	rest
 	${Boost_LIBRARIES}
 )
