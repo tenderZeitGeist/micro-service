@@ -5,9 +5,13 @@
 #pragma once
 
 #include <boost/beast/http.hpp>
+#include <boost/regex.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 namespace rest {
+    /// forward declaration due to Handler alias
+    struct Response;
+
     /// MIME types
     constexpr std::string_view kJson      = "application/json";
     constexpr std::string_view kTextPlain = "text/plain";
@@ -15,14 +19,21 @@ namespace rest {
     /// Server info
     constexpr std::string_view kServerInfo = "Zoo Micro Service v0";
 
+    /// Server config
+    constexpr std::string_view kDefaultAddress = "0.0.0.0";
+    constexpr uint16_t kDefaultPort = 8080;
+
     /// namespaces
     namespace beast = boost::beast;
     namespace http = beast::http;
 
     /// `using` aliases
-    using tcp = boost::asio::ip::tcp;
-    using http_response = http::response<http::string_body>;
-    using http_serializer = http::response_serializer<http::string_body>;
-    using http_request = http::request<http::string_body>;
-    using http_parser = http::request_parser<http::string_body>;
+    using Tcp = boost::asio::ip::tcp;
+    using HttpResponse = http::response<http::string_body>;
+    using HttpSerializer = http::response_serializer<http::string_body>;
+    using HttpRequest = http::request<http::string_body>;
+    using HttpParser = http::request_parser<http::string_body>;
+    using Method = http::verb;
+    using Endpoint = boost::regex;
+    using Handler = std::function<Response(const HttpRequest&)>;
 }

@@ -13,16 +13,16 @@ option(USE_SYSTEM_BOOST "Use system boost" Off)
 
 find_package(Boost QUIET)
 
-if(BOOST_FOUND AND USE_SYSTEM_BOOST)
-	message(STATUS "Using system boost library")
-else()
-### Boost 1.84 ###
-	set(BOOST_ROOT "${LIB_DIR}/boost_1_84_0")
-	set(BOOST_INCLUDE_DIR "${BOOST_ROOT}/include")
-	set(BOOST_LIBRARY_DIR "${BOOST_ROOT}/lib")
-	find_package(Boost REQUIRED)
-	message(STATUS "Using system boost library")
-endif()
+if (BOOST_FOUND AND USE_SYSTEM_BOOST)
+    message(STATUS "Using system boost library")
+else ()
+    ### Boost 1.84 ###
+    set(BOOST_ROOT "${LIB_DIR}/boost_1_84_0")
+    set(BOOST_INCLUDE_DIR "${BOOST_ROOT}/include")
+    set(BOOST_LIBRARY_DIR "${BOOST_ROOT}/lib")
+    find_package(Boost REQUIRED COMPONENTS url)
+    message(STATUS "Using system boost library")
+endif ()
 message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
@@ -35,9 +35,15 @@ set(SOURCE_FILES ${REST_SOURCE_FILES} main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
+target_include_directories(
+        ${PROJECT_NAME}
+        PUBLIC
+            ${Boost_INCLUDE_DIRS}
+)
+
 target_link_libraries(
-	${PROJECT_NAME}
-	PUBLIC
-	rest
-	${Boost_LIBRARIES}
+        ${PROJECT_NAME}
+        PUBLIC
+            rest
+            ${Boost_LIBRARIES}
 )

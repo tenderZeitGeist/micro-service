@@ -3,8 +3,9 @@
 //
 #pragma once
 
-#include "Request.hpp"
+#include "Alias.hpp"
 #include "Response.hpp"
+#include "Route.hpp"
 
 #include <boost/regex.hpp>
 #include <boost/url.hpp>
@@ -13,46 +14,29 @@
 
 namespace rest {
 
+    enum class Verb {
+        GET,
+        PUT,
+        POST,
+        DELETE,
+    };
+
     class Controller {
 
-        using Handler = std::function<Response(const Request&)>;
-
-        struct Route {
-            Route(http::verb method, boost::regex endpoint, Handler callback)
-                : method(method)
-                , endpoint(std::move(endpoint))
-                , callback(std::move(callback))
-            {}
-
-            http::verb method;
-            boost::regex endpoint;
-            Handler callback;
-        };
+        using Method = http::verb;
 
     public:
 
-        enum class Method {
-            GET,
-            PUT,
-            POST,
-            DELETE,
-        };
-
-        template<typename F, Method M, typename... Args>
-        bool emplaceRoute(boost::regex endpoint, F handler, Args... args) {
-            if (std::ranges::find_if(m_routes, [&endpoint](const auto& route) { return endpoint == route.endpoint; })) {
+        bool emplaceRoute(Route route) {
+            if(std::ranges::any_of(m_routes, [&rhs = route](const auto& lhs) { return lhs == rhs; })) {
                 return false;
             }
-
-            Handler callback = [handler = std::move(handler), endpoint, args..., this](const Request& request) {
-                return handler(methodToVerb<M>(), request, endpoint, args...);
-            };
-
+            m_routes.emplace_back(std::move(route));
             return true;
         }
 
         [[nodiscard]]
-        Response execute(const Request& request) const {
+        Response execute(const HttpRequest& request) const {
             namespace url = boost::urls;
 
             url::result<url::url_view> target = url::parse_origin_form(request.target());
@@ -65,26 +49,25 @@ namespace rest {
             });
 
             if(result != m_routes.end()) {
-                result->callback(request);
+                return result->callback(request);
             }
 
             return {http::status::not_found, target->path() + " not found", std::string(rest::kTextPlain)};
         }
 
     private:
-        template<Method M>
-        http::verb methodToVerb() {
-            switch(M) {
-                case Method::GET:
-                    return http::verb::get;
-                case Method::PUT:
+        http::verb verbToMethod(Verb v) {
+            switch(v) {
+                case Verb::GET:
+                    return Method::get;
+                case Verb::PUT:
                     return http::verb::put;
-                case Method::POST:
+                case Verb::POST:
                     return http::verb::post;
-                case Method::DELETE:
+                case Verb::DELETE:
                     return http::verb::delete_;
             }
-            static_assert(false);
+            assert(false);
         }
 
         std::vector<Route> m_routes;

@@ -17,7 +17,7 @@ namespace rest {
         static constexpr std::chrono::seconds kTimeout{60};
     public:
         HttpWorker(
-            std::reference_wrapper<tcp::acceptor> acceptor,
+            std::reference_wrapper<Tcp::acceptor> acceptor,
             std::reference_wrapper<Controller> controller
         );
 
@@ -26,23 +26,22 @@ namespace rest {
     private:
         void accept();
         void readRequest();
-        void processRequest(const http_request& request);
+        void processRequest(const HttpRequest& request);
         void send();
         void prepareResponse(http::status status, const std::string& body, std::string_view mimeType);
-        void sendError(http::status status, const std::string& error, std::string_view mimeType);
         void checkTimeout();
 
-        std::reference_wrapper<tcp::acceptor> m_acceptor;
+        std::reference_wrapper<Tcp::acceptor> m_acceptor;
         std::reference_wrapper<Controller> m_controller;
-        tcp::socket m_socket{m_acceptor.get().get_executor()};
+        Tcp::socket m_socket{m_acceptor.get().get_executor()};
         boost::asio::basic_waitable_timer<clock> m_requestTimeout{
             m_acceptor.get().get_executor(),
             clock::time_point::max()
         };
         beast::flat_buffer m_buffer;
 
-        std::optional<http_parser> m_parser;
-        std::optional<http_response> m_response;
-        std::optional<http_serializer> m_serializer;
+        std::unique_ptr<HttpParser> m_parser;
+        std::unique_ptr<HttpResponse> m_response;
+        std::unique_ptr<HttpSerializer> m_serializer;
     };
 }
