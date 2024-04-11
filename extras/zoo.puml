@@ -1,0 +1,33 @@
+@startuml
+
+package Zoo {
+class Animal {
+  - name : String
+  - species : String
+  - age : uint
+}
+
+class Compound {
+  - amount : int
+  - name : String
+  - size : uint
+}
+
+class AnimalService {
+  - animals : List<Animal>
+}
+
+class CompoundService {
+  - compounds : List<Animal>
+}
+
+class RestController {
+	getAllCompounds() : List<Compound>
+	getCompoundByName(name : String) : Compound
+	getAnimalByName(name : String) : Animal
+	addAnimalToCompound(animalRequest : String) : Animal
+	deleteAnimal(animalRequest : String) : Animal
+	getAllAnimalsBySpecies(species : String) : List<Animal>
+}
+
+@enduml
