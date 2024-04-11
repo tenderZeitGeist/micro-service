@@ -29,21 +29,27 @@ message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 
 #Subdirs
 add_subdirectory(rest)
+add_subdirectory(zoo)
 
 #Source files
-set(SOURCE_FILES ${REST_SOURCE_FILES} main.cpp)
+set(SOURCE_FILES
+        ${REST_SOURCE_FILES}
+        ${ZOO_SOURCE_FILES}
+        main.cpp
+)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_include_directories(
         ${PROJECT_NAME}
         PUBLIC
-            ${Boost_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(
         ${PROJECT_NAME}
         PUBLIC
-            rest
-            ${Boost_LIBRARIES}
+        rest
+        zoo
+        ${Boost_LIBRARIES}
 )
