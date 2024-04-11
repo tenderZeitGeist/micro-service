@@ -1,33 +1,54 @@
 @startuml
 
-package Zoo {
-class Animal {
+package zoo {
+
+enum Species {
+    Mammal,
+    Fish,
+    Reptile,
+    Bird
+}
+
+abstract Animal {
   - name : String
-  - species : String
+  - species : Species
   - age : uint
 }
 
-class Compound {
-  - amount : int
-  - name : String
-  - size : uint
-}
+class Mammal extends Animal {}
+class Fish extends Animal {}
+class Reptile extends Animal {}
+class Bird extends Animal {}
 
-class AnimalService {
+class Compound {
+  - amount : uint
+  - size : uint
+  - name : String
   - animals : List<Animal>
 }
 
-class CompoundService {
-  - compounds : List<Animal>
+class AnimalService {
+  - animals : Map<Animal>
 }
 
+class CompoundService {
+  - compounds : Map<Compound>
+  + getAllCompounds() : List<>
+}
+
+AnimalService "1" *-- "n" Animal
+Compound "1" -- "n" Animal
+CompoundService "1" *-- "n" Compound
+}
+
+package rest{
 class RestController {
-	getAllCompounds() : List<Compound>
-	getCompoundByName(name : String) : Compound
-	getAnimalByName(name : String) : Animal
-	addAnimalToCompound(animalRequest : String) : Animal
-	deleteAnimal(animalRequest : String) : Animal
-	getAllAnimalsBySpecies(species : String) : List<Animal>
+    + getAllCompounds() : List<Compound>
+    + getCompoundByName(name : String) : Compound
+    + getAnimalByName(name : String) : Animal
+    + addAnimalToCompound(animalRequest : AnimalRequest) : Animal
+    + deleteAnimal(animalRequest : AnimalRequest) : Animal
+    + getAllAnimalsBySpecies(species : String) : List<Animal>
 }
 
 @enduml
