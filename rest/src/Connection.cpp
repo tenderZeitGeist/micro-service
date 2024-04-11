@@ -25,21 +25,20 @@ namespace rest {
         }
     }
 
-    std::unique_ptr<rest::Controller> Connection::initializeController(std::vector<Route> routes) {
-        auto controller = std::make_unique<Controller>();
+    Controller Connection::initializeController(std::vector<Route>&& routes) {
+        Controller controller;
         for(auto& route : routes){
-            controller->emplaceRoute(route);
-        }
-
-        m_workers.reserve(m_numOfThreads);
-        for(std::size_t i = 0; i < m_numOfThreads; ++i) {
-            m_workers.emplace_back(m_acceptor, *controller);
-            m_workers.back().start();
+            controller.emplaceRoute(route);
         }
 
         m_signals = std::make_unique<net::signal_set>(m_ioContext, SIGINT, SIGTERM);
         m_signals->async_wait([&ioContext = m_ioContext](const boost::system::error_code&, int){ ioContext.stop(); });
 
+        m_workers.reserve(m_numOfThreads);
+        for(std::size_t i = 0; i < m_numOfThreads; ++i) {
+            m_workers.emplace_back(m_acceptor, controller);
+            m_workers[i].start();
+        }
         const auto numOfParallelThreads = m_numOfThreads - 1;
         m_threads.reserve(numOfParallelThreads);
         for(std::size_t i = 0; i < numOfParallelThreads; ++i) {

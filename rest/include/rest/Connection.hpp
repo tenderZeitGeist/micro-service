@@ -26,7 +26,7 @@ namespace rest {
     public:
         explicit Connection(net::ip::address host, uint16_t port, std::size_t numOfThreads);
         ~Connection();
-        std::unique_ptr<rest::Controller> initializeController(std::vector<Route> routes);
+        Controller initializeController(std::vector<Route> && routes);
         void run();
 
     private:
