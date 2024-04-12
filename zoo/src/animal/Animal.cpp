@@ -1,7 +1,7 @@
 //
 // Created by zeitgeist on 11.04.24.
 //
-#include "zoo/Animal.hpp"
+#include "zoo/animal/Animal.hpp"
 
 namespace {
     std::string speciesToString(zoo::Species species) {
@@ -20,7 +20,7 @@ namespace {
 
 
 namespace zoo {
-    Animal::Animal(std::string name, zoo::Species species, std::size_t age)
+    Animal::Animal(std::string name, Species species, std::size_t age)
     : m_name(std::move(name))
     , m_species(species)
     , m_age(age){

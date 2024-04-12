@@ -2,7 +2,11 @@
 // Created by zeitgeist on 11.04.24.
 //
 
+#pragma once
+
 #include <string>
+
+#include <zoo/database/Entity.hpp>
 
 namespace zoo {
     enum class Species {
@@ -12,17 +16,15 @@ namespace zoo {
         BIRD
     };
 
-    class Animal {
+    class Animal
+        : public Entity{
     public:
-        virtual ~Animal() = default;
-
+        explicit Animal(std::string name, Species species, std::size_t age);
         [[nodiscard]] const std::string& getName() const;
         [[nodiscard]] const std::string& getSpecies() const;
         [[nodiscard]] std::size_t getAge() const;
 
-    protected:
-        Animal(std::string name, Species species, std::size_t age);
-
+    private:
         std::string m_name;
         Species m_species;
         std::size_t m_age;
