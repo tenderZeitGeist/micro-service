@@ -43,13 +43,13 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_include_directories(
         ${PROJECT_NAME}
         PUBLIC
-        ${Boost_INCLUDE_DIRS}
+            ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(
         ${PROJECT_NAME}
         PUBLIC
-        rest
-        zoo
-        ${Boost_LIBRARIES}
+            rest
+            zoo
+            ${Boost_LIBRARIES}
 )

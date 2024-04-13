@@ -7,10 +7,6 @@ set(DIR_SOURCE ${CMAKE_CURRENT_LIST_DIR}/src)
 
 set(ZOO_HEADER_FILES
         "${DIR_INCLUDE}/zoo/animal/Animal.hpp"
-        "${DIR_INCLUDE}/zoo/animal/Bird.hpp"
-        "${DIR_INCLUDE}/zoo/animal/Fish.hpp"
-        "${DIR_INCLUDE}/zoo/animal/Mammal.hpp"
-        "${DIR_INCLUDE}/zoo/animal/Reptile.hpp"
 
         "${DIR_INCLUDE}/zoo/compound/Compound.hpp"
 
