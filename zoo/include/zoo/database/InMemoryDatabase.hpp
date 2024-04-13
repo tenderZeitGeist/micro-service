@@ -20,6 +20,6 @@ public:
     bool deleteEntity(std::shared_ptr<Entity> entity) override;
 
 private:
-    void init();
+    void initPettingZoo();
     std::unordered_map<std::size_t, std::shared_ptr<Entity>> m_entities;
 };

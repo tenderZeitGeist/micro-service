@@ -47,7 +47,7 @@ ServiceController::ServiceController(std::unique_ptr<AnimalService> animalServic
     : m_animalService(std::move(animalService)),
       m_compoundService(std::move(compoundService)) {}
 
-rest::Response ServiceController::getAllCompounds(const rest::Request& r) const {
+rest::Response ServiceController::getAllCompounds() const {
     const auto compounds = m_compoundService->getAllTargetEntities();
     std::stringstream stream;
     return kNotFoundResponse;

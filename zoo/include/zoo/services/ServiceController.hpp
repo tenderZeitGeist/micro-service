@@ -15,7 +15,7 @@ class ServiceController
     : public ServiceControllerInterface {
 public:
     explicit ServiceController(std::unique_ptr<AnimalService> animalsService, std::unique_ptr<CompoundService> compoundService);
-    [[nodiscard]] rest::Response getAllCompounds(const rest::Request& r) const override;
+    [[nodiscard]] rest::Response getAllCompounds() const override;
     [[nodiscard]] rest::Response getCompoundByName(const rest::Request& r) const override;
     [[nodiscard]] rest::Response getAnimalByName(const rest::Request& r) const override;
     [[nodiscard]] rest::Response addAnimalToCompound(const rest::Request& r) override;

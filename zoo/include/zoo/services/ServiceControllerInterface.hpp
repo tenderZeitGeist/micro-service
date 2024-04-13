@@ -12,7 +12,7 @@ namespace zoo {
 class ServiceControllerInterface {
     public:
     virtual ~ServiceControllerInterface() = default;
-    [[nodiscard]] virtual rest::Response getAllCompounds(const rest::Request& r) const = 0;
+    [[nodiscard]] virtual rest::Response getAllCompounds() const = 0;
     [[nodiscard]] virtual rest::Response getCompoundByName(const rest::Request& r) const = 0;
     [[nodiscard]] virtual rest::Response getAnimalByName(const rest::Request& r) const = 0;
     [[nodiscard]] virtual rest::Response addAnimalToCompound(const rest::Request& r) = 0;

@@ -20,21 +20,13 @@ public:
 
     [[nodiscard]] std::vector<std::reference_wrapper<const T>> getAllTargetEntities() const {
         const auto entities = m_database->getAllEntities();
-        const auto view = entities | std::ranges::views::filter(
-                              [](const auto& entity) {
-                                  return dynamic_cast<const T*>(entity.get()) != nullptr;
-                              }
-                          );
+        auto filteredView = entities
+        | std::ranges::views::filter([](const auto& entity) { return dynamic_cast<const T*>(entity.get()) != nullptr; })
+        | std::views::transform([](const auto& entity){ return std::cref(*static_cast<const T*>(entity.get())); });
 
         std::vector<std::reference_wrapper<const T>> results;
-        results.reserve(std::ranges::distance(view.begin(), view.end()));
-        std::ranges::views::transform(
-            view,
-            std::back_inserter(results),
-            [](const auto& entity) {
-                return std::cref(*static_cast<const T*>(entity.get()));
-            }
-        );
+        results.reserve(std::ranges::distance(filteredView));
+        std::ranges::copy(filteredView, std::back_inserter(results));
         return results;
     }
 

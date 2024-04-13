@@ -23,13 +23,36 @@ std::string speciesToString(zoo::Species species) {
     return "";
 }
 
+zoo::Species stringToSpecies(const std::string& speciesString) {
+    if (speciesString == "Mammal") {
+        return zoo::Species::MAMMAL;
+    }
+    if (speciesString == "Fish") {
+        return zoo::Species::FISH;
+    }
+    if (speciesString == "Reptile") {
+        return zoo::Species::REPTILE;
+    }
+    if (speciesString == "Bird") {
+        return zoo::Species::BIRD;
+    }
+    assert(false && "Invalid species string was passed.");
+    return zoo::Species::INVALID; // Or some other default value
+}
+
 }
 
 namespace zoo {
 
-Animal::Animal(std::string name, Species species, std::size_t age)
+Animal::Animal(std::string name, std::size_t age, Species species)
     : m_name(std::move(name))
-    , m_species(species)
+    ,  m_species(species)
+    ,  m_age(age) {}
+
+Animal::Animal(std::string name, std::size_t age, std::string species)
+    : m_name(std::move(name))
+    , m_species(stringToSpecies(species))
+    , m_speciesString(std::move(species))
     , m_age(age) {}
 
 const std::string& Animal::getName() const {
@@ -37,7 +60,7 @@ const std::string& Animal::getName() const {
 }
 
 const std::string& Animal::getSpecies() const {
-    if(m_speciesString.empty()) {
+    if (m_speciesString.empty()) {
         m_speciesString = speciesToString(m_species);
     }
     return m_speciesString;

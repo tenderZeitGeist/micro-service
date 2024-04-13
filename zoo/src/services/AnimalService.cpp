@@ -7,8 +7,6 @@
 namespace zoo {
 
 AnimalService::AnimalService(std::shared_ptr<DatabaseInterface> database)
-    : ServiceInterface(std::move(database)){
-
-}
+    : ServiceInterface(std::move(database)){}
 
 }

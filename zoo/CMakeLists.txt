@@ -34,6 +34,8 @@ set(ZOO_SOURCE_FILES
     "${DIR_SOURCE}/services/ServiceController.cpp"
 )
 
+file(COPY ${CMAKE_SOURCE_DIR}/extras/PettingZoo.txt DESTINATION ${CMAKE_BINARY_DIR})
+
 add_library(
     ${PROJECT_NAME}
     STATIC

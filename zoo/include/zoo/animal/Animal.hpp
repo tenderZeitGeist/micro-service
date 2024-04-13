@@ -13,13 +13,15 @@ namespace zoo {
         MAMMAL,
         FISH,
         REPTILE,
-        BIRD
+        BIRD,
+        INVALID
     };
 
     class Animal
         : public Entity{
     public:
-        explicit Animal(std::string name, Species species, std::size_t age);
+        explicit Animal(std::string name, std::size_t age, Species species);
+        explicit Animal(std::string name, std::size_t age, std::string species);
         [[nodiscard]] const std::string& getName() const;
         [[nodiscard]] const std::string& getSpecies() const;
         [[nodiscard]] std::size_t getAge() const;
