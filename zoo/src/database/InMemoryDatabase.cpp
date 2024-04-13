@@ -3,11 +3,10 @@
 //
 
 #include "zoo/database/InMemoryDatabase.hpp"
+#include "zoo/database/Entity.hpp"
 
 #include <atomic>
 #include <ranges>
-
-#include "zoo/database/Entity.hpp"
 
 namespace {
 std::atomic_size_t kCounter = 0;

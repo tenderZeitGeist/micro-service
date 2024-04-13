@@ -13,7 +13,7 @@ namespace zoo {
     class AnimalService
         : public ServiceInterface<Animal> {
     public:
-        [[nodiscard]] std::optional<std::reference_wrapper<T>> getEntityByName(const std::string& name) const override;
+        explicit AnimalService(std::shared_ptr<DatabaseInterface> database);
     };
 
 }

@@ -23,10 +23,12 @@ namespace zoo {
         [[nodiscard]] const std::string& getName() const;
         [[nodiscard]] const std::string& getSpecies() const;
         [[nodiscard]] std::size_t getAge() const;
+        friend bool operator==(const Animal& rhs, const Animal& lhs);
 
     private:
         std::string m_name;
         Species m_species;
+        mutable std::string m_speciesString;
         std::size_t m_age;
     };
 

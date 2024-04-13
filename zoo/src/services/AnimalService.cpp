@@ -4,13 +4,11 @@
 
 #include "zoo/services/AnimalService.hpp"
 
-namespace zoo
-{
+namespace zoo {
 
-std::optional<std::reference_wrapper<Animal>> AnimalService::getEntityByName(const std::string& name) const
-{
-    const auto entities = m_database->getAllEntities();
-    return std::nullopt;
+AnimalService::AnimalService(std::shared_ptr<DatabaseInterface> database)
+    : ServiceInterface(std::move(database)){
+
 }
 
 }
