@@ -9,4 +9,5 @@ namespace zoo {
 CompoundService::CompoundService(std::shared_ptr<DatabaseInterface> database)
     : ServiceInterface(std::move(database)) {}
 
+
 }

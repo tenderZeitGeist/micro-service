@@ -4,6 +4,7 @@
 #include "zoo/animal/Animal.hpp"
 
 #include <cassert>
+#include <sstream>
 
 namespace {
 
