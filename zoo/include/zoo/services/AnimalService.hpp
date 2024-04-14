@@ -15,7 +15,7 @@ namespace zoo {
         : public ServiceInterface<Animal> {
     public:
         explicit AnimalService(std::shared_ptr<DatabaseInterface> database);
-        [[nodiscard]] std::vector<std::reference_wrapper<Animal>> getAnimalsByIds(const std::vector<std::size_t>& ids) const;
+        [[nodiscard]] std::vector<std::reference_wrapper<const Animal>> getAnimalsByIds(const std::vector<std::size_t>& ids) const;
     };
 
 }

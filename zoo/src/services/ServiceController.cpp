@@ -37,11 +37,16 @@ std::string toJson(const zoo::Compound& compound, const std::vector<std::referen
     stream << "}";
     return stream.str();
 }
+
 }
 
 namespace zoo {
 
-const rest::Response kNotFoundResponse = rest::Response(rest::http::status::not_found);
+const rest::Response kNotFoundResponse = rest::Response(
+    rest::http::status::not_found,
+    "The resource you are looking was not found",
+    rest::kTextPlain.data()
+    );
 
 ServiceController::ServiceController(std::unique_ptr<AnimalService> animalService, std::unique_ptr<CompoundService> compoundService)
     : m_animalService(std::move(animalService)),
@@ -49,8 +54,15 @@ ServiceController::ServiceController(std::unique_ptr<AnimalService> animalServic
 
 rest::Response ServiceController::getAllCompounds() const {
     const auto compounds = m_compoundService->getAllTargetEntities();
-    std::stringstream stream;
-    return kNotFoundResponse;
+    auto body = parse(compounds);
+    if(body.empty()) {
+        return kNotFoundResponse;
+    }
+    return rest::Response{
+        rest::http::status::ok,
+        std::move(body),
+        rest::kJson.data()
+    };
 }
 
 rest::Response ServiceController::getCompoundByName(const rest::Request& r) const {
@@ -74,6 +86,16 @@ rest::Response ServiceController::deleteAnimalFromCompound(const rest::Request& 
 
 rest::Response ServiceController::getAllAnimalsBySpecies(const rest::Request& r) {
     return kNotFoundResponse;
+}
+
+std::string ServiceController::parse(std::vector<std::reference_wrapper<const Compound>> compounds) const {
+    std::stringstream stream;
+    for(auto compoundRef : compounds) {
+        const auto& compound = compoundRef.get();
+        const auto animals = m_animalService->getAnimalsByIds(compound.getAnimals());
+        stream << toJson(compound, animals);
+    }
+    return stream.str();
 }
 
 }

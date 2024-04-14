@@ -15,11 +15,11 @@ public:
 
     std::shared_ptr<Entity> getEntityById(std::size_t id) override;
     std::vector<std::shared_ptr<Entity>> getAllEntities() override;
-    void addEntity(std::shared_ptr<Entity> entity) override;
-    void addEntities(std::vector<std::shared_ptr<Entity>> entities) override;
+    std::size_t addEntity(std::shared_ptr<Entity> entity) override;
+    std::vector<std::size_t> addEntities(std::vector<std::shared_ptr<Entity>> entities) override;
     bool deleteEntity(std::shared_ptr<Entity> entity) override;
 
 private:
-    void initPettingZoo();
+    void initCompound(std::string_view fileName);
     std::unordered_map<std::size_t, std::shared_ptr<Entity>> m_entities;
 };

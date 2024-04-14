@@ -12,6 +12,15 @@
 
 #include <zoo/database/DatabaseInterface.hpp>
 
+template<typename T>
+class ServiceInterface;
+template<typename T>
+using EntityReference = std::reference_wrapper<const T>;
+template<typename T>
+using EntityReferenceList = std::vector<EntityReference<const T>>;
+template<typename T>
+using OptionalEntityReference = std::optional<EntityReference<const T>>;
+
 namespace zoo {
 template<typename T>
 class ServiceInterface {
@@ -25,7 +34,7 @@ public:
         | std::views::transform([](const auto& entity){ return std::cref(*static_cast<const T*>(entity.get())); });
 
         std::vector<std::reference_wrapper<const T>> results;
-        results.reserve(std::ranges::distance(filteredView));
+        results.reserve(static_cast<std::size_t>(std::abs(std::ranges::distance(filteredView))));
         std::ranges::copy(filteredView, std::back_inserter(results));
         return results;
     }

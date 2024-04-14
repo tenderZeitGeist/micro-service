@@ -5,9 +5,11 @@
 #pragma once
 
 #include "ServiceControllerInterface.hpp"
+#include "ServiceInterface.hpp"
 
 namespace zoo {
 
+class Compound;
 class AnimalService;
 class CompoundService;
 
@@ -23,6 +25,8 @@ public:
     [[nodiscard]] rest::Response getAllAnimalsBySpecies(const rest::Request& r) override;
 
 private:
+    [[nodiscard]] std::string parse(std::vector<std::reference_wrapper<const Compound>> compounds) const;
+
     std::unique_ptr<AnimalService> m_animalService;
     std::unique_ptr<CompoundService> m_compoundService;
 };
