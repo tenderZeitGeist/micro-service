@@ -36,4 +36,13 @@ namespace rest {
     using Method = http::verb;
     using Endpoint = boost::regex;
     using Handler = std::function<Response(const HttpRequest&)>;
+
+    namespace routes {
+        const Endpoint getCompounds("/compounds/");
+        const Endpoint getCompoundByName("/compounds/[a-zA-Z]{1,255}$");
+        const Endpoint getAnimalByName("/animals/[a-zA-Z]{1,255}$");
+        const Endpoint postAnimalByCompound("/compounds/[a-zA-Z]{1,255}$");
+        const Endpoint deleteAnimalByCompound("/compounds/([a-zA-Z]{1,255})/animals/([a-zA-Z]{1,255})$");
+        const Endpoint getAnimalsBySpecies("/animals/species/(?i:(mammal|fish|bird|reptile))$");
+    }
 }

@@ -15,6 +15,12 @@ class CompoundService;
 
 class ServiceController
     : public ServiceControllerInterface {
+
+    struct DeleteResourceId {
+        std::string compoundName;
+        std::string animalName;
+    };
+
 public:
     explicit ServiceController(std::unique_ptr<AnimalService> animalsService, std::unique_ptr<CompoundService> compoundService);
     [[nodiscard]] rest::Response getAllCompounds() const override;
@@ -27,7 +33,7 @@ public:
 private:
     [[nodiscard]] std::string parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const;
     [[nodiscard]] std::optional<std::size_t> tryAdd(std::string_view body) const;
-    [[nodiscard]] std::optional<std::size_t> tryDelete(std::string_view body) const;
+    [[nodiscard]] std::optional<DeleteResourceId> tryDelete(std::string_view body) const;
 
     std::unique_ptr<AnimalService> m_animalService;
     std::unique_ptr<CompoundService> m_compoundService;

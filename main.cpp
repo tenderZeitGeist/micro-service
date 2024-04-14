@@ -22,32 +22,32 @@ int main() {
     const auto controller = connection.initializeController({
         {
             rest::Method::get,
-            rest::Endpoint("/compounds"),
+            rest::routes::getCompounds,
             [serviceController](const rest::HttpRequest&) { return serviceController->getAllCompounds(); }
         },
         {
             rest::Method::get,
-            rest::Endpoint("/compounds/[a-zA-Z]{1,255}$"),
+            rest::routes::getCompoundByName,
             [serviceController](const rest::HttpRequest& r) { return serviceController->getCompoundByName(r); }
         },
         {
             rest::Method::get,
-            rest::Endpoint("/animals/[a-zA-Z]{1,255}$"),
+            rest::routes::getAnimalByName,
             [serviceController](const rest::HttpRequest& r) { return serviceController->getAnimalByName(r); }
         },
         {
             rest::Method::post,
-            rest::Endpoint("/compounds/[a-zA-Z]{1,255}$"),
+            rest::routes::postAnimalByCompound,
             [serviceController](const rest::HttpRequest& r) { return serviceController->addAnimalToCompound(r); }
         },
         {
             rest::Method::delete_,
-            rest::Endpoint("/compounds/[a-zA-Z]{1,255}/animal/[a-zA-Z]{1,255}$"),
+            rest::routes::deleteAnimalByCompound,
             [serviceController](const rest::HttpRequest& r) { return serviceController->deleteAnimalFromCompound(r); }
         },
         {
             rest::Method::get,
-            rest::Endpoint("/animal/(?i:mammal|fish|bird|reptile)"),
+            rest::routes::getAnimalsBySpecies,
             [serviceController](const rest::HttpRequest& r) { return serviceController->getAllAnimalsBySpecies(r); }
         },
     });

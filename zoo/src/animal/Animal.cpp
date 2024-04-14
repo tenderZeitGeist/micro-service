@@ -3,13 +3,52 @@
 //
 #include "zoo/animal/Animal.hpp"
 
-#include <cassert>
+#include <algorithm>
 #include <sstream>
 #include <exception>
 
-namespace {
+namespace zoo {
 
-std::string speciesToString(zoo::Species species) {
+const std::array<const std::string, 4> Animal::kSpeciesStrings = {
+        "Mammal",
+        "Fish",
+        "Reptile",
+        "Bird"
+    };
+
+Animal::Animal(std::string name, std::size_t age, Species species)
+    : m_name(std::move(name))
+    , m_species(species)
+    , m_age(age) {}
+
+Animal::Animal(std::string name, std::size_t age, std::string species)
+    : m_name(std::move(name))
+    , m_species(stringToSpecies(species))
+    , m_age(age) {}
+
+const std::string& Animal::getName() const {
+    return m_name;
+}
+
+Species Animal::getSpecies() const {
+    return m_species;
+}
+
+const std::string& Animal::getSpeciesString() const {
+    return kSpeciesStrings[static_cast<std::size_t>(m_species)];
+}
+
+std::size_t Animal::getAge() const {
+    return m_age;
+}
+
+bool operator==(const Animal& rhs, const Animal& lhs) {
+    return rhs.getAge() == lhs.getAge()
+           && rhs.getName() == lhs.getName()
+           && rhs.getSpecies() == lhs.getSpecies();
+}
+
+std::string Animal::speciesToString(Species species) {
     switch (species) {
         case zoo::Species::MAMMAL:
             return "Mammal";
@@ -23,54 +62,22 @@ std::string speciesToString(zoo::Species species) {
     throw std::exception();
 }
 
-zoo::Species stringToSpecies(const std::string& speciesString) {
-    if (speciesString == "Mammal") {
+Species Animal::stringToSpecies(const std::string& speciesString) {
+    std::string lowerCase;
+    std::ranges::transform(speciesString, std::back_inserter(lowerCase), [](auto c){ return std::tolower(c); });
+    if (lowerCase == "mammal") {
         return zoo::Species::MAMMAL;
     }
-    if (speciesString == "Fish") {
+    if (lowerCase == "fish") {
         return zoo::Species::FISH;
     }
-    if (speciesString == "Reptile") {
+    if (lowerCase == "reptile") {
         return zoo::Species::REPTILE;
     }
-    if (speciesString == "Bird") {
+    if (lowerCase == "bird") {
         return zoo::Species::BIRD;
     }
     throw std::exception();
-}
-
-}
-
-namespace zoo {
-
-Animal::Animal(std::string name, std::size_t age, Species species)
-    : m_name(std::move(name))
-    ,  m_species(species)
-    ,  m_speciesString(speciesToString(species))
-    ,  m_age(age) {}
-
-Animal::Animal(std::string name, std::size_t age, std::string species)
-    : m_name(std::move(name))
-    , m_species(stringToSpecies(species))
-    , m_speciesString(std::move(species))
-    , m_age(age) {}
-
-const std::string& Animal::getName() const {
-    return m_name;
-}
-
-const std::string& Animal::getSpecies() const {
-    return m_speciesString;
-}
-
-std::size_t Animal::getAge() const {
-    return m_age;
-}
-
-bool operator==(const Animal& rhs, const Animal& lhs) {
-    return rhs.getAge() == lhs.getAge()
-           && rhs.getName() == lhs.getName()
-           && rhs.getSpecies() == lhs.getSpecies();
 }
 
 }

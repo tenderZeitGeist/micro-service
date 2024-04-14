@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <array>
 #include <string>
 
 #include <zoo/database/Entity.hpp>
@@ -14,18 +15,22 @@ namespace zoo {
         FISH,
         REPTILE,
         BIRD,
-        INVALID
     };
 
     class Animal
         : public Entity{
+        static const std::array<const std::string, 4> kSpeciesStrings;
     public:
         explicit Animal(std::string name, std::size_t age, Species species);
         explicit Animal(std::string name, std::size_t age, std::string species);
         [[nodiscard]] const std::string& getName() const;
-        [[nodiscard]] const std::string& getSpecies() const;
+        [[nodiscard]] Species getSpecies() const;
+        [[nodiscard]] const std::string& getSpeciesString() const;
         [[nodiscard]] std::size_t getAge() const;
         friend bool operator==(const Animal& rhs, const Animal& lhs);
+
+        static std::string speciesToString(Species species);
+        static Species stringToSpecies(const std::string& speciesString);
 
     private:
         std::string m_name;

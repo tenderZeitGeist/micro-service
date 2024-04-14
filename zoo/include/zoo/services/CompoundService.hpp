@@ -15,6 +15,7 @@ namespace zoo {
     public:
         explicit CompoundService(std::shared_ptr<DatabaseInterface> database);
         [[nodiscard]] bool addAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const;
+        [[nodiscard]] bool deleteAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const;
     };
 
 }

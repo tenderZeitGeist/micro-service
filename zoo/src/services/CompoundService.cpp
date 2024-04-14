@@ -7,14 +7,13 @@
 #include "zoo/animal/Animal.hpp"
 
 namespace zoo {
-
 CompoundService::CompoundService(std::shared_ptr<DatabaseInterface> database)
     : ServiceInterface(std::move(database)) {}
 
 bool CompoundService::addAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const {
     auto entity = m_database->getEntityById(compound.get().getId());
     if(!entity) {
-       return false;
+        return false;
     }
 
     auto* compoundPtr = dynamic_cast<Compound*>(entity.get());
@@ -23,6 +22,20 @@ bool CompoundService::addAnimal(std::reference_wrapper<const Compound> compound,
     }
 
     return compoundPtr->addAnimal(animalId);
+}
+
+bool CompoundService::deleteAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const {
+    auto entity = m_database->getEntityById(compound.get().getId());
+    if(!entity) {
+        return false;
+    }
+
+    auto* compoundPtr = dynamic_cast<Compound*>(entity.get());
+    if(!compoundPtr) {
+        return false;
+    }
+
+    return compoundPtr->deleteAnimal(animalId);
 }
 
 }
