@@ -58,6 +58,25 @@ public:
         return std::nullopt;
     }
 
+    [[nodiscard]] std::optional<std::reference_wrapper<const T>> getEntityById(std::size_t id) const {
+        const auto entities = m_database->getAllEntities();
+        const auto iter = std::ranges::find_if(
+            entities,
+            [id](const auto& entity) {
+                if (const auto* targetType = dynamic_cast<const T*>(entity.get())) {
+                    return targetType->getId() == id;
+                }
+                return false;
+            }
+        );
+
+        if (iter != entities.end()) {
+            return std::make_optional(std::ref(static_cast<T&>(**iter)));
+        }
+
+        return std::nullopt;
+    }
+
 protected:
     explicit ServiceInterface(std::shared_ptr<DatabaseInterface> database)
         : m_database(std::move(database)) {}

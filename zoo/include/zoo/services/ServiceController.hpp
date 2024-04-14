@@ -25,7 +25,9 @@ public:
     [[nodiscard]] rest::Response getAllAnimalsBySpecies(const rest::Request& r) override;
 
 private:
-    [[nodiscard]] std::string parse(std::vector<std::reference_wrapper<const Compound>> compounds) const;
+    [[nodiscard]] std::string parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const;
+    [[nodiscard]] std::optional<std::size_t> tryAdd(std::string_view body) const;
+    [[nodiscard]] std::optional<std::size_t> tryDelete(std::string_view body) const;
 
     std::unique_ptr<AnimalService> m_animalService;
     std::unique_ptr<CompoundService> m_compoundService;

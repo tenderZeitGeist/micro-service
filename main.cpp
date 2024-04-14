@@ -37,17 +37,17 @@ int main() {
         },
         {
             rest::Method::post,
-            rest::Endpoint("compounds/^[a-zA-Z]{1,255}$/animals"),
+            rest::Endpoint("/compounds/[a-zA-Z]{1,255}$"),
             [serviceController](const rest::HttpRequest& r) { return serviceController->addAnimalToCompound(r); }
         },
         {
             rest::Method::delete_,
-            rest::Endpoint("compounds/^[a-zA-Z]{1,255}/animal/^[a-zA-Z]{1,255}"),
+            rest::Endpoint("/compounds/[a-zA-Z]{1,255}/animal/[a-zA-Z]{1,255}$"),
             [serviceController](const rest::HttpRequest& r) { return serviceController->deleteAnimalFromCompound(r); }
         },
         {
             rest::Method::get,
-            rest::Endpoint("/animal/{species}"),
+            rest::Endpoint("/animal/(?i:mammal|fish|bird|reptile)"),
             [serviceController](const rest::HttpRequest& r) { return serviceController->getAllAnimalsBySpecies(r); }
         },
     });

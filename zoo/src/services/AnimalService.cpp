@@ -20,4 +20,15 @@ std::vector<std::reference_wrapper<const Animal>> AnimalService::getAnimalsByIds
     return {filteredView.begin(), filteredView.end()};
 }
 
+std::size_t AnimalService::addAnimal(std::shared_ptr<Animal> animal) const {
+    return m_database->addEntity(std::move(animal));
+}
+
+bool AnimalService::deleteAnimal(std::size_t id) const {
+    if(auto animal = m_database->getEntityById(id)) {
+        return m_database->deleteEntity(std::move(animal));
+    }
+    return false;
+}
+
 }

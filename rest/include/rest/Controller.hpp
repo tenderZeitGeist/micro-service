@@ -12,6 +12,8 @@
 
 #include <functional>
 
+#include <iostream>
+
 namespace rest {
 
     enum class Verb {
@@ -41,8 +43,10 @@ namespace rest {
 
             url::result<url::url_view> target = url::parse_origin_form(request.target());
             if(target.has_error()) {
-                return {http::status::bad_request, "Invalid target", std::string(rest::kTextPlain)};
+                return {http::status::bad_request, "Invalid target", kTextPlain.data()};
             }
+
+            std::cout << target << '\n';
 
             const auto result = std::ranges::find_if(m_routes, [&request, &target](const auto& route){
                 return route.method == request.method() && boost::regex_match(target->path(), route.endpoint);
@@ -52,7 +56,7 @@ namespace rest {
                 return result->callback(request);
             }
 
-            return {http::status::not_found, target->path() + " not found", std::string(rest::kTextPlain)};
+            return {http::status::not_found, target->path() + " not found", kTextPlain.data()};
         }
 
     private:

@@ -30,7 +30,7 @@ namespace zoo {
     private:
         std::string m_name;
         Species m_species;
-        mutable std::string m_speciesString;
+        std::string m_speciesString;
         std::size_t m_age;
     };
 

@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <exception>
 
 namespace {
 
@@ -19,8 +20,7 @@ std::string speciesToString(zoo::Species species) {
         case zoo::Species::BIRD:
             return "Bird";
     }
-    assert(false && "Invalid species param was passed.");
-    return "";
+    throw std::exception();
 }
 
 zoo::Species stringToSpecies(const std::string& speciesString) {
@@ -36,8 +36,7 @@ zoo::Species stringToSpecies(const std::string& speciesString) {
     if (speciesString == "Bird") {
         return zoo::Species::BIRD;
     }
-    assert(false && "Invalid species string was passed.");
-    return zoo::Species::INVALID; // Or some other default value
+    throw std::exception();
 }
 
 }
@@ -47,6 +46,7 @@ namespace zoo {
 Animal::Animal(std::string name, std::size_t age, Species species)
     : m_name(std::move(name))
     ,  m_species(species)
+    ,  m_speciesString(speciesToString(species))
     ,  m_age(age) {}
 
 Animal::Animal(std::string name, std::size_t age, std::string species)
@@ -60,9 +60,6 @@ const std::string& Animal::getName() const {
 }
 
 const std::string& Animal::getSpecies() const {
-    if (m_speciesString.empty()) {
-        m_speciesString = speciesToString(m_species);
-    }
     return m_speciesString;
 }
 
