@@ -1,0 +1,6 @@
+AquaticHabitat 40
+Goldfish 5 Fish
+Angelfish 3 Fish
+Clownfish 2 Fish
+Guppy 1 Fish
+Beta 1 Fish
