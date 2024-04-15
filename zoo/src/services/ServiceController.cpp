@@ -55,39 +55,29 @@ std::string toJson(const zoo::Compound& compound, const std::vector<std::referen
     return stream.str();
 }
 
-std::string parseResourceId(std::string_view target) {
-    std::string t = target.data();
-    const auto lastSlash = target.find_last_of('/');
-    std::string resourceId = t.substr(lastSlash + 1);
-    if (const auto paramPos = resourceId.find_first_of("?#")) {
-        return resourceId.substr(0, paramPos);
-    }
-    return resourceId;
-}
-
 }
 
 namespace zoo {
 
 namespace json = boost::json;
 
-const rest::Response kNotFoundResponse = rest::Response(
+static const rest::Response kNotFoundResponse {
     rest::http::status::not_found,
     "The resource couldn't be located",
     rest::kTextPlain.data()
-);
+};
 
-const rest::Response kBadRequest = rest::Response(
+static const rest::Response kBadRequest {
     rest::http::status::bad_request,
     "The request contains insufficient or false data",
     rest::kTextPlain.data()
-);
+};
 
-const rest::Response kInternalError= rest::Response(
+static const auto kInternalError {
     rest::http::status::internal_server_error,
     "The request couldn't be processed because of an internal error",
     rest::kTextPlain.data()
-);
+};
 
 ServiceController::ServiceController(std::unique_ptr<AnimalService> animalService, std::unique_ptr<CompoundService> compoundService)
     : m_animalService(std::move(animalService)),
@@ -107,7 +97,13 @@ rest::Response ServiceController::getAllCompounds() const {
 }
 
 rest::Response ServiceController::getCompoundByName(const rest::Request& r) const {
-    const auto compound = m_compoundService->getEntityByName(parseResourceId(r.target()));
+    boost::cmatch matches;
+    const auto& target = r.target();
+    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getCompoundByName)
+        || matches.size() != 2) {
+        return kBadRequest;
+    }
+    const auto compound = m_compoundService->getEntityByName(matches[1].str());
     if (!compound) {
         return kNotFoundResponse;
     }
@@ -120,7 +116,13 @@ rest::Response ServiceController::getCompoundByName(const rest::Request& r) cons
 }
 
 rest::Response ServiceController::getAnimalByName(const rest::Request& r) const {
-    const auto animal = m_animalService->getEntityByName(parseResourceId(r.target()));
+    boost::cmatch matches;
+    const auto& target = r.target();
+    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getAnimalByName)
+        || matches.size() != 2) {
+        return kBadRequest;
+    }
+    const auto animal = m_animalService->getEntityByName(matches[1].str());
     if (!animal) {
         return kNotFoundResponse;
     }
@@ -133,8 +135,14 @@ rest::Response ServiceController::getAnimalByName(const rest::Request& r) const 
 }
 
 rest::Response ServiceController::addAnimalToCompound(const rest::Request& r) {
-    const auto compoundResourceId = parseResourceId(r.target());
-    const auto compound = m_compoundService->getEntityByName(compoundResourceId);
+    boost::cmatch matches;
+    const auto& target = r.target();
+    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::postAnimalByCompound)
+        || matches.size() != 2) {
+        return kBadRequest;
+    }
+
+    const auto compound = m_compoundService->getEntityByName(matches[1].str());
     if (!compound) {
         return kNotFoundResponse;
     }
@@ -191,7 +199,8 @@ rest::Response ServiceController::deleteAnimalFromCompound(const rest::Request& 
     }
 
     return {
-        rest::http::status::no_content
+        rest::http::status::no_content,
+        ""
     };
 }
 
