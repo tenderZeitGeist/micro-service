@@ -13,53 +13,59 @@
 
 #include <iostream>
 
+namespace json = boost::json;
+
 namespace {
 
-std::string toJson(const zoo::Animal& animal) {
-    std::stringstream stream;
-    stream << "{";
-    stream << "\"id\": \"" << animal.getId() << "\", ";
-    stream << "\"name\": \"" << animal.getName() << "\", ";
-    stream << "\"age\": " << animal.getAge() << ", ";
-    stream << "\"species\": " << animal.getSpeciesString();
-    stream << "}";
-    return stream.str();
+json::object makeHypermediaLinks(std::string_view baseUri, const std::string& resourceId) {
+    return {
+        { "self", std::string(baseUri) + "/" + resourceId },
+        { "all", baseUri }
+    };
 }
 
-std::string toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>& animals) {
-    std::stringstream stream;
-    for(std::size_t i = 0; i < animals.size(); ++i) {
-        stream << toJson(animals[i].get());
-        if(i < animals.size() - 1) {
-            stream << ", ";
-        }
-    }
-    return stream.str();
+json::object toJson(std::reference_wrapper<const zoo::Animal> animalRef) {
+    const auto& animal = animalRef.get();
+    return json::object{
+        {"id", animal.getId()},
+        {"name", animal.getName()},
+        {"age", animal.getAge()},
+        {"species", animal.getSpeciesString()}
+        };
 }
 
-std::string toJson(const zoo::Compound& compound, const std::vector<std::reference_wrapper<const zoo::Animal>>& animals) {
-    std::stringstream stream;
-    stream << "{";
-    stream << "\"id\": \"" << compound.getId() << "\", ";
-    stream << "\"name\": \"" << compound.getName() << "\", ";
-    stream << "\"size\": " << compound.getSize() << ", ";
-    stream << "\"animals\": [";
-    for (size_t i = 0; i < animals.size(); ++i) {
-        stream << toJson(animals[i]);
-        if (i < animals.size() - 1) {
-            stream << ", ";
-        }
+json::object toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
+    json::object object{{"animals", json::array()}};
+    for(auto animalRef : animalRefs) {
+        object["animals"].as_array().emplace_back(toJson(animalRef));
     }
-    stream << "]";
-    stream << "}";
-    return stream.str();
+    return object;
+}
+
+json::object toJson(
+    std::string_view target,
+    std::reference_wrapper<const zoo::Compound> comoundRef,
+    const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
+    const auto& compound = comoundRef.get();
+    auto links = makeHypermediaLinks(target, compound.getName());
+    json::object object {
+        {"id", compound.getId()},
+        {"name", compound.getName()},
+        {"size", compound.getSize()},
+        {"animals", json::array()},
+        {"_links", std::move(links)}
+    };
+
+    for(auto animalRef : animalRefs) {
+        object["animals"].as_array().emplace_back(toJson(animalRef));
+    }
+
+    return object;
 }
 
 }
 
 namespace zoo {
-
-namespace json = boost::json;
 
 static const rest::Response kNotFoundResponse {
     rest::http::status::not_found,
@@ -73,7 +79,7 @@ static const rest::Response kBadRequest {
     rest::kTextPlain.data()
 };
 
-static const auto kInternalError {
+static const rest::Response kInternalError {
     rest::http::status::internal_server_error,
     "The request couldn't be processed because of an internal error",
     rest::kTextPlain.data()
@@ -85,7 +91,7 @@ ServiceController::ServiceController(std::unique_ptr<AnimalService> animalServic
 
 rest::Response ServiceController::getAllCompounds() const {
     const auto compounds = m_compoundService->getAllTargetEntities();
-    auto body = parse(compounds);
+    auto body = parse("/compounds", compounds);
     if (body.empty()) {
         return kNotFoundResponse;
     }
@@ -107,7 +113,7 @@ rest::Response ServiceController::getCompoundByName(const rest::Request& r) cons
     if (!compound) {
         return kNotFoundResponse;
     }
-    std::string body = parse({*compound});
+    std::string body = parse(r.target(), {*compound});
     return {
         rest::http::status::ok,
         std::move(body),
@@ -126,7 +132,7 @@ rest::Response ServiceController::getAnimalByName(const rest::Request& r) const 
     if (!animal) {
         return kNotFoundResponse;
     }
-    std::string body = toJson(*animal);
+    std::string body = json::serialize(json::array().emplace_back(toJson(*animal)));
     return {
         rest::http::status::ok,
         std::move(body),
@@ -162,7 +168,7 @@ rest::Response ServiceController::addAnimalToCompound(const rest::Request& r) {
         return kInternalError;
     }
 
-    std::string body = toJson(*animal);
+    std::string body = json::serialize(json::array().emplace_back(toJson(*animal)));
     return {
         rest::http::status::ok,
         std::move(body),
@@ -219,7 +225,7 @@ rest::Response ServiceController::getAllAnimalsBySpecies(const rest::Request& r)
         auto filteredView = animals
                 | std::ranges::views::filter([species](auto animal) { return animal.get().getSpecies() == species; })
                 | std::views::common;
-        std::string body = toJson({filteredView.begin(), filteredView.end()});
+        std::string body = json::serialize(json::array().emplace_back(toJson({filteredView.begin(), filteredView.end()})));
         return {
             rest::http::status::ok,
             std::move(body),
@@ -230,14 +236,13 @@ rest::Response ServiceController::getAllAnimalsBySpecies(const rest::Request& r)
     }
 }
 
-std::string ServiceController::parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
-    std::stringstream stream;
+std::string ServiceController::parse(std::string_view target, const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
+    json::object object{{"compounds", json::array()}};
     for (auto compoundRef: compounds) {
-        const auto& compound = compoundRef.get();
-        const auto animals = m_animalService->getAnimalsByIds(compound.getAnimals());
-        stream << toJson(compound, animals);
+        const auto animalRefs = m_animalService->getAnimalsByIds(compoundRef.get().getAnimals());
+        object["compounds"].as_array().emplace_back(toJson(target, compoundRef, animalRefs));
     }
-    return stream.str();
+    return json::serialize(json::array().emplace_back(std::move(object)));
 }
 
 std::optional<std::size_t> ServiceController::tryAdd(std::string_view body) const {

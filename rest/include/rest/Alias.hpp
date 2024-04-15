@@ -38,7 +38,7 @@ namespace rest {
     using Handler = std::function<Response(const HttpRequest&)>;
 
     namespace routes {
-        static const Endpoint getCompounds("^/compounds/$");
+        static const Endpoint getCompounds("^/compounds$");
         static const Endpoint getCompoundByName("^/compounds/([a-zA-Z]{1,255})$");
         static const Endpoint getAnimalByName("^/animals/([a-zA-Z]{1,255})$");
         static const Endpoint postAnimalByCompound("^/compounds/([a-zA-Z]{1,255})/animals$");
