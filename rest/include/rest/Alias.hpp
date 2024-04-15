@@ -38,11 +38,11 @@ namespace rest {
     using Handler = std::function<Response(const HttpRequest&)>;
 
     namespace routes {
-        const Endpoint getCompounds("/compounds/");
-        const Endpoint getCompoundByName("/compounds/[a-zA-Z]{1,255}$");
-        const Endpoint getAnimalByName("/animals/[a-zA-Z]{1,255}$");
-        const Endpoint postAnimalByCompound("/compounds/[a-zA-Z]{1,255}$");
-        const Endpoint deleteAnimalByCompound("/compounds/([a-zA-Z]{1,255})/animals/([a-zA-Z]{1,255})$");
-        const Endpoint getAnimalsBySpecies("/animals/species/(?i:(mammal|fish|bird|reptile))$");
+        static const Endpoint getCompounds("^/compounds/$");
+        static const Endpoint getCompoundByName("^/compounds/([a-zA-Z]{1,255})$");
+        static const Endpoint getAnimalByName("^/animals/([a-zA-Z]{1,255})$");
+        static const Endpoint postAnimalByCompound("^/compounds/([a-zA-Z]{1,255})/animals$");
+        static const Endpoint deleteAnimalByCompound("^/compounds/([a-zA-Z]{1,255})/animals/([a-zA-Z]{1,255})$");
+        static const Endpoint getAnimalsBySpecies("^/animals/species/(?i:(mammal|fish|bird|reptile))$");
     }
 }
