@@ -11,7 +11,7 @@ namespace zoo {
 
 Compound::Compound(std::string name, std::size_t sizeInSqm)
     : m_name(std::move(name))
-    , m_sizeInSqm(sizeInSqm){}
+    , m_sizeInSqm(sizeInSqm) {}
 
 const std::string& Compound::getName() const {
     return m_name;

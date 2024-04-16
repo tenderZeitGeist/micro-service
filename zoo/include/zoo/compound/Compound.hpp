@@ -16,7 +16,7 @@ class Animal;
 class Compound :
     public core::database::Entity{
 public:
-    Compound(std::string name, std::size_t sizeInSqm);
+    explicit Compound(std::string name, std::size_t sizeInSqm);
     [[nodiscard]] const std::string& getName() const;
     [[nodiscard]] std::size_t getSize() const;
     [[nodiscard]] std::vector<std::size_t> getAnimals() const;
