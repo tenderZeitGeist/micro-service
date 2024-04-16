@@ -19,8 +19,34 @@ namespace {
 
 json::object makeHypermediaLinks(std::string_view baseUri, const std::string& resourceId) {
     return {
-        { "self", std::string(baseUri) + "/" + resourceId },
-        { "all", baseUri }
+        { "_links", json::array{
+            json::object{
+                { "rel", "self" },
+                { "href", std::string(baseUri) + "/" + resourceId }
+            },
+            json::object{
+                { "rel", "add" },
+                { "href", std::string(baseUri) + "/" + resourceId  + "/animals"},
+                {"title", "Adds an animal to the compound"}
+            },
+            json::object{
+                { "rel", "all" },
+                { "href", baseUri }
+            }
+        }}
+    };
+}
+
+json::object makeHypermediaLinks(
+    std::string_view baseUri,
+    const std::string& compoundId,
+    const std::string& animalId,
+    const std::string& animalSpecies) {
+    const std::string base = std::string(baseUri);
+    return {
+        { "self", base + "/" + compoundId + "/" + animalId },
+        { "species", base + "/animals/" + animalSpecies},
+        { "delete", base + "/animals/"}
     };
 }
 
