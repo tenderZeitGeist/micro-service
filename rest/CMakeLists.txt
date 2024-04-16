@@ -17,6 +17,7 @@ set(REST_HEADER_FILES
 
 set(REST_SOURCE_FILES
     "${DIR_SOURCE}/Connection.cpp"
+    "${DIR_SOURCE}/Controller.cpp"
     "${DIR_SOURCE}/HttpWorker.cpp"
 )
 
@@ -44,5 +45,6 @@ set_target_properties(
 target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
+    core
     ${Boost_LIBRARIES}
 )

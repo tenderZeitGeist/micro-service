@@ -5,7 +5,6 @@
 #include "rest/Connection.hpp"
 #include "rest/Controller.hpp"
 #include "rest/HttpWorker.hpp"
-#include "rest/Route.hpp"
 
 namespace rest {
 
@@ -25,12 +24,7 @@ namespace rest {
         }
     }
 
-    Controller Connection::initializeController(std::vector<Route>&& routes) {
-        Controller controller;
-        for(auto& route : routes){
-            controller.emplaceRoute(route);
-        }
-
+    bool Connection::connectController(std::reference_wrapper<const Controller> controller) {
         m_signals = std::make_unique<net::signal_set>(m_ioContext, SIGINT, SIGTERM);
         m_signals->async_wait([&ioContext = m_ioContext](const boost::system::error_code&, int){ ioContext.stop(); });
 
@@ -45,7 +39,7 @@ namespace rest {
             m_threads.emplace_back([&ioContext = m_ioContext](){ ioContext.run(); });
         }
 
-        return controller;
+        return true;
     }
 
     void Connection::run() {

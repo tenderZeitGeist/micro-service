@@ -12,6 +12,9 @@ namespace rest {
     /// forward declaration due to Handler alias
     struct Response;
 
+    /// Threads
+    constexpr std::size_t kMaxThreads = 4;
+
     /// MIME types
     constexpr std::string_view kJson      = "application/json";
     constexpr std::string_view kTextPlain = "text/plain";

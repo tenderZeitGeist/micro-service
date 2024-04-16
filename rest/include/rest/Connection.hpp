@@ -26,7 +26,7 @@ namespace rest {
     public:
         explicit Connection(net::ip::address host, uint16_t port, std::size_t numOfThreads);
         ~Connection();
-        Controller initializeController(std::vector<Route> && routes);
+        [[nodiscard]] bool connectController(std::reference_wrapper<const Controller> controller);
         void run();
 
     private:

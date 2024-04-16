@@ -1,17 +1,44 @@
-# micro-service
-A small REST-application
+# micro-service++
+A small REST-application, written in cpp using the cpp20 & boost.
 
 
-## Testing the API vial `curl`
+### Testing the API vial `curl`
 
-### Post
+#### Get
+```
+curl -X GET \
+  http://localhost:8080/compounds
+```
+
+```
+curl -X GET \
+  http://localhost:8080/compounds/PettingZoo/animals
+```
+
+```
+curl -X GET \
+  http://localhost:8080/animals/Cat
+```
+
+```
+curl -X GET \
+  http://localhost:8080/animals/birds
+```
+
+#### Post
 ```
 curl -X POST \
   http://localhost:8080/compounds/PettingZoo/animals \
   -H 'Content-Type: application/json' \
   -d '{
-    "name": "Fluffy",
+    "name": "Possum",
     "age": 3,
-    "species": "Cat"
+    "species": "Mammal"
 }'
+```
+
+#### Delete
+```
+curl -X DELETE \
+  http://localhost:8080/compounds/PettingZoo/animals/Cat
 ```

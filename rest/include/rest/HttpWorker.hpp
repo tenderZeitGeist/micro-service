@@ -16,9 +16,9 @@ namespace rest {
         using clock = std::chrono::steady_clock;
         static constexpr std::chrono::seconds kTimeout{60};
     public:
-        HttpWorker(
+        explicit HttpWorker(
             std::reference_wrapper<Tcp::acceptor> acceptor,
-            std::reference_wrapper<Controller> controller
+            std::reference_wrapper<const Controller> controller
         );
 
         void start();
@@ -32,7 +32,7 @@ namespace rest {
         void checkTimeout();
 
         std::reference_wrapper<Tcp::acceptor> m_acceptor;
-        std::reference_wrapper<Controller> m_controller;
+        std::reference_wrapper<const Controller> m_controller;
         Tcp::socket m_socket{m_acceptor.get().get_executor()};
         boost::asio::basic_waitable_timer<clock> m_requestTimeout{
             m_acceptor.get().get_executor(),

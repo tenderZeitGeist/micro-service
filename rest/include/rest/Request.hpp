@@ -11,6 +11,5 @@
 namespace rest {
 
 using Request = http::request<http::string_body>;
-using Status = http::status;
 
 }
