@@ -4,7 +4,11 @@
 
 #pragma once
 
-#include <string>
+#include <cstddef>
+
+#include "zoo/database/InMemoryDatabase.hpp"
+
+namespace core::database {
 
 class Entity {
 public:
@@ -13,6 +17,8 @@ public:
 protected:
     std::size_t m_id{};
 private:
-    friend class InMemoryDatabase;
+    friend class zoo::database::InMemoryDatabase;
     void setId(std::size_t id);
 };
+
+}

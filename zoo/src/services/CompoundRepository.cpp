@@ -2,15 +2,15 @@
 // Created by zeitgeist on 12.04.24.
 //
 
-#include "zoo/services/CompoundService.hpp"
+#include <zoo/services/CompoundRepository.hpp>
 
-#include "zoo/animal/Animal.hpp"
+#include <zoo/compound/Compound.hpp>
 
 namespace zoo {
-CompoundService::CompoundService(std::shared_ptr<DatabaseInterface> database)
-    : ServiceInterface(std::move(database)) {}
+CompoundRepository::CompoundRepository(std::shared_ptr<core::database::DatabaseInterface> database)
+    : RepositoryInterface(std::move(database)) {}
 
-bool CompoundService::addAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const {
+bool CompoundRepository::addAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const {
     auto entity = m_database->getEntityById(compound.get().getId());
     if(!entity) {
         return false;
@@ -24,7 +24,7 @@ bool CompoundService::addAnimal(std::reference_wrapper<const Compound> compound,
     return compoundPtr->addAnimal(animalId);
 }
 
-bool CompoundService::deleteAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const {
+bool CompoundRepository::deleteAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const {
     auto entity = m_database->getEntityById(compound.get().getId());
     if(!entity) {
         return false;

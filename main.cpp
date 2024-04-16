@@ -4,18 +4,18 @@
 #include <rest/Controller.hpp>
 #include <rest/Connection.hpp>
 
-#include <zoo/services/AnimalService.hpp>
-#include <zoo/services/CompoundService.hpp>
-#include <zoo/services/ServiceController.hpp>
+#include <zoo/services/AnimalRepository.hpp>
+#include <zoo/services/CompoundRepository.hpp>
+#include <zoo/services/AnimalServiceController.hpp>
 #include <zoo/database/InMemoryDatabase.hpp>
 
 constexpr std::size_t kMaxThreads = 4;
 
 int main() {
-    std::shared_ptr<DatabaseInterface> database = std::make_shared<InMemoryDatabase>();
-    std::shared_ptr<zoo::ServiceControllerInterface> serviceController = std::make_unique<zoo::ServiceController>(
-        std::make_unique<zoo::AnimalService>(database),
-        std::make_unique<zoo::CompoundService>(database)
+    const auto database = std::make_shared<zoo::database::InMemoryDatabase>();
+    const auto serviceController = std::make_shared<zoo::AnimalServiceController>(
+        std::make_unique<zoo::AnimalRepository>(database),
+        std::make_unique<zoo::CompoundRepository>(database)
     );
     const auto numOfThreads = std::min(static_cast<std::size_t>(std::thread::hardware_concurrency()), kMaxThreads);
     rest::Connection connection(net::ip::make_address(rest::kDefaultAddress), rest::kDefaultPort, numOfThreads);

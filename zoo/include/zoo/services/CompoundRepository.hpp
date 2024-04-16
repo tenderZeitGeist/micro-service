@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include "ServiceInterface.hpp"
-
-#include "zoo/compound/Compound.hpp"
+#include <core/repository/RepositoryInterface.hpp>
 
 namespace zoo {
 
-    class CompoundService
-        : public ServiceInterface<Compound>{
+class Compound;
+
+    class CompoundRepository
+        : public core::repository::RepositoryInterface<Compound>{
     public:
-        explicit CompoundService(std::shared_ptr<DatabaseInterface> database);
+        explicit CompoundRepository(std::shared_ptr<core::database::DatabaseInterface> database);
         [[nodiscard]] bool addAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const;
         [[nodiscard]] bool deleteAnimal(std::reference_wrapper<const Compound> compound, std::size_t animalId) const;
     };

@@ -7,7 +7,7 @@
 #include <rest/Response.hpp>
 #include <rest/Request.hpp>
 
-namespace zoo {
+namespace core::repository {
 
 class ServiceControllerInterface {
     public:

@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "zoo/database/Entity.hpp"
+#include <core/database/Entity.hpp>
 
 #include <string>
 #include <unordered_set>
@@ -14,7 +14,7 @@ namespace zoo {
 class Animal;
 
 class Compound :
-    public Entity{
+    public core::database::Entity{
 public:
     Compound(std::string name, std::size_t sizeInSqm);
     [[nodiscard]] const std::string& getName() const;

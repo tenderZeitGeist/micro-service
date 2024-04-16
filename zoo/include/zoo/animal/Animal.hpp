@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include <core/database/Entity.hpp>
+
 #include <array>
 #include <string>
-
-#include <zoo/database/Entity.hpp>
 
 namespace zoo {
     enum class Species {
@@ -18,7 +18,7 @@ namespace zoo {
     };
 
     class Animal
-        : public Entity{
+        : public core::database::Entity{
         static const std::array<const std::string, 4> kSpeciesStrings;
     public:
         explicit Animal(std::string name, std::size_t age, Species species);

@@ -2,7 +2,9 @@
 // Created by zeitgeist on 12.04.24.
 //
 
-#include "zoo/database/Entity.hpp"
+#include <core/database/Entity.hpp>
+
+namespace core::database {
 
 std::size_t Entity::getId() const
 {
@@ -12,4 +14,6 @@ std::size_t Entity::getId() const
 void Entity::setId(std::size_t id)
 {
     m_id = id;
+}
+
 }

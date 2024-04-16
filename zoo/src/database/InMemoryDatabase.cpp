@@ -2,29 +2,30 @@
 // Created by zeitgeist on 12.04.24.
 //
 
-#include "zoo/database/InMemoryDatabase.hpp"
+#include <zoo/database/InMemoryDatabase.hpp>
 
-#include "zoo/animal/Animal.hpp"
-#include "zoo/database/Entity.hpp"
-#include "zoo/compound/Compound.hpp"
+#include <zoo/animal/Animal.hpp>
+#include <zoo/compound/Compound.hpp>
 
 #include <atomic>
 #include <memory>
 #include <ranges>
 #include <fstream>
 #include <filesystem>
-
-#include <iostream>
+#include <vector>
 
 namespace {
-std::atomic_size_t kCounter = 0;
+    std::atomic_size_t kCounter = 0;
 }
+
+namespace zoo::database {
+
+using namespace core::database;
 
 InMemoryDatabase::InMemoryDatabase() {
     for (const auto file: {"MarineSanctuary.txt", "PettingZoo.txt", "Safari.txt", "ReptileRetreat.txt", "TropicalAviary.txt"}) {
         initCompound(file);
     }
-    std::cout << "Initialized database..." << '\n';
 }
 
 std::shared_ptr<Entity> InMemoryDatabase::getEntityById(std::size_t id) {
@@ -95,4 +96,6 @@ void InMemoryDatabase::initCompound(std::string_view fileName) {
         }
     }
     addEntity(std::move(pettingZoo));
+}
+
 }

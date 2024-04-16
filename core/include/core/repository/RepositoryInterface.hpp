@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include <core/database/DatabaseInterface.hpp>
+
 #include <memory>
 #include <string>
 #include <optional>
 #include <ranges>
 #include <vector>
-
-#include <zoo/database/DatabaseInterface.hpp>
 
 template<typename T>
 class ServiceInterface;
@@ -21,11 +21,11 @@ using EntityReferenceList = std::vector<EntityReference<const T>>;
 template<typename T>
 using OptionalEntityReference = std::optional<EntityReference<const T>>;
 
-namespace zoo {
+namespace core::repository {
 template<typename T>
-class ServiceInterface {
+class RepositoryInterface {
 public:
-    virtual ~ServiceInterface() = default;
+    virtual ~RepositoryInterface() = default;
 
     [[nodiscard]] std::vector<std::reference_wrapper<const T>> getAllTargetEntities() const {
         const auto entities = m_database->getAllEntities();
@@ -78,10 +78,10 @@ public:
     }
 
 protected:
-    explicit ServiceInterface(std::shared_ptr<DatabaseInterface> database)
+    explicit RepositoryInterface(std::shared_ptr<database::DatabaseInterface> database)
         : m_database(std::move(database)) {}
 
-    std::shared_ptr<DatabaseInterface> m_database;
+    std::shared_ptr<database::DatabaseInterface> m_database;
 };
 
 }

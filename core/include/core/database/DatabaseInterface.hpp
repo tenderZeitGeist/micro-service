@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 
+namespace core::database {
+
 class Entity;
 
 class DatabaseInterface {
@@ -18,3 +20,5 @@ public:
     virtual std::size_t addEntity(std::shared_ptr<Entity> entity) = 0;
     virtual std::vector<std::size_t> addEntities(std::vector<std::shared_ptr<Entity>> entities) = 0;
 };
+
+}

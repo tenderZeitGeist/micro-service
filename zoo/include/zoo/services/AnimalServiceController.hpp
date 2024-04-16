@@ -4,17 +4,16 @@
 
 #pragma once
 
-#include "ServiceControllerInterface.hpp"
-#include "ServiceInterface.hpp"
+#include <core/repository/ServiceControllerInterface.hpp>
 
 namespace zoo {
 
 class Compound;
-class AnimalService;
-class CompoundService;
+class AnimalRepository;
+class CompoundRepository;
 
-class ServiceController
-    : public ServiceControllerInterface {
+class AnimalServiceController
+    : public core::repository::ServiceControllerInterface {
 
     struct DeleteResourceId {
         std::string compoundName;
@@ -22,7 +21,7 @@ class ServiceController
     };
 
 public:
-    explicit ServiceController(std::unique_ptr<AnimalService> animalsService, std::unique_ptr<CompoundService> compoundService);
+    explicit AnimalServiceController(std::unique_ptr<AnimalRepository> animalsService, std::unique_ptr<CompoundRepository> compoundService);
     [[nodiscard]] rest::Response getAllCompounds() const override;
     [[nodiscard]] rest::Response getCompoundByName(const rest::Request& r) const override;
     [[nodiscard]] rest::Response getAnimalByName(const rest::Request& r) const override;
@@ -31,12 +30,12 @@ public:
     [[nodiscard]] rest::Response getAllAnimalsBySpecies(const rest::Request& r) override;
 
 private:
-    [[nodiscard]] std::string parse(std::string_view target, const std::vector<std::reference_wrapper<const Compound>>& compounds) const;
+    [[nodiscard]] std::string parse(const std::string& baseUri, const std::vector<std::reference_wrapper<const Compound>>& compounds) const;
     [[nodiscard]] std::optional<std::size_t> tryAdd(std::string_view body) const;
     [[nodiscard]] std::optional<DeleteResourceId> tryDelete(std::string_view body) const;
 
-    std::unique_ptr<AnimalService> m_animalService;
-    std::unique_ptr<CompoundService> m_compoundService;
+    std::unique_ptr<AnimalRepository> m_animalService;
+    std::unique_ptr<CompoundRepository> m_compoundService;
 };
 
 }

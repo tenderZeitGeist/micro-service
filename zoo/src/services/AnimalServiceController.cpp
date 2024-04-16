@@ -2,11 +2,12 @@
 // Created by abentler on 13.04.24.
 //
 
-#include "zoo/services/ServiceController.hpp"
+#include <zoo/services/AnimalServiceController.hpp>
 
-#include "zoo/services/AnimalService.hpp"
-#include "zoo/services/CompoundService.hpp"
-#include "zoo/services/ServiceInterface.hpp"
+#include <zoo/animal/Animal.hpp>
+#include <zoo/compound/Compound.hpp>
+#include <zoo/services/AnimalRepository.hpp>
+#include <zoo/services/CompoundRepository.hpp>
 
 #include <boost/regex.hpp>
 #include <boost/json.hpp>
@@ -17,16 +18,16 @@ namespace json = boost::json;
 
 namespace {
 
-json::object makeHypermediaLinks(std::string_view baseUri, const std::string& resourceId) {
+json::object makeHypermediaLinks(const std::string& baseUri, const std::string& resourceId) {
     return {
         { "_links", json::array{
             json::object{
                 { "rel", "self" },
-                { "href", std::string(baseUri) + "/" + resourceId }
+                { "href", baseUri + "/" + resourceId }
             },
             json::object{
                 { "rel", "add" },
-                { "href", std::string(baseUri) + "/" + resourceId  + "/animals"},
+                { "href", baseUri + "/" + resourceId  + "/animals"},
                 {"title", "Adds an animal to the compound"}
             },
             json::object{
@@ -38,15 +39,14 @@ json::object makeHypermediaLinks(std::string_view baseUri, const std::string& re
 }
 
 json::object makeHypermediaLinks(
-    std::string_view baseUri,
+    const std::string& baseUri,
     const std::string& compoundId,
     const std::string& animalId,
     const std::string& animalSpecies) {
-    const std::string base = std::string(baseUri);
     return {
-        { "self", base + "/" + compoundId + "/" + animalId },
-        { "species", base + "/animals/" + animalSpecies},
-        { "delete", base + "/animals/"}
+        { "self", baseUri + "/" + compoundId + "/" + animalId },
+        { "species", baseUri + "/animals/" + animalSpecies},
+        { "delete", baseUri + "/animals/"}
     };
 }
 
@@ -69,11 +69,11 @@ json::object toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>
 }
 
 json::object toJson(
-    std::string_view target,
+    const std::string& baseUri,
     std::reference_wrapper<const zoo::Compound> comoundRef,
     const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
     const auto& compound = comoundRef.get();
-    auto links = makeHypermediaLinks(target, compound.getName());
+    auto links = makeHypermediaLinks(baseUri, compound.getName());
     json::object object {
         {"id", compound.getId()},
         {"name", compound.getName()},
@@ -111,13 +111,16 @@ static const rest::Response kInternalError {
     rest::kTextPlain.data()
 };
 
-ServiceController::ServiceController(std::unique_ptr<AnimalService> animalService, std::unique_ptr<CompoundService> compoundService)
+static const std::string kCompoundsRootUri = "/compound";
+static const std::string kAnimalsRootUri = "/animals";
+
+AnimalServiceController::AnimalServiceController(std::unique_ptr<AnimalRepository> animalService, std::unique_ptr<CompoundRepository> compoundService)
     : m_animalService(std::move(animalService)),
       m_compoundService(std::move(compoundService)) {}
 
-rest::Response ServiceController::getAllCompounds() const {
+rest::Response AnimalServiceController::getAllCompounds() const {
     const auto compounds = m_compoundService->getAllTargetEntities();
-    auto body = parse("/compounds", compounds);
+    auto body = parse(kCompoundsRootUri, compounds);
     if (body.empty()) {
         return kNotFoundResponse;
     }
@@ -128,7 +131,7 @@ rest::Response ServiceController::getAllCompounds() const {
     };
 }
 
-rest::Response ServiceController::getCompoundByName(const rest::Request& r) const {
+rest::Response AnimalServiceController::getCompoundByName(const rest::Request& r) const {
     boost::cmatch matches;
     const auto& target = r.target();
     if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getCompoundByName)
@@ -139,7 +142,7 @@ rest::Response ServiceController::getCompoundByName(const rest::Request& r) cons
     if (!compound) {
         return kNotFoundResponse;
     }
-    std::string body = parse(r.target(), {*compound});
+    std::string body = parse(kCompoundsRootUri, {*compound});
     return {
         rest::http::status::ok,
         std::move(body),
@@ -147,7 +150,7 @@ rest::Response ServiceController::getCompoundByName(const rest::Request& r) cons
     };
 }
 
-rest::Response ServiceController::getAnimalByName(const rest::Request& r) const {
+rest::Response AnimalServiceController::getAnimalByName(const rest::Request& r) const {
     boost::cmatch matches;
     const auto& target = r.target();
     if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getAnimalByName)
@@ -166,7 +169,7 @@ rest::Response ServiceController::getAnimalByName(const rest::Request& r) const 
     };
 }
 
-rest::Response ServiceController::addAnimalToCompound(const rest::Request& r) {
+rest::Response AnimalServiceController::addAnimalToCompound(const rest::Request& r) {
     boost::cmatch matches;
     const auto& target = r.target();
     if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::postAnimalByCompound)
@@ -202,7 +205,7 @@ rest::Response ServiceController::addAnimalToCompound(const rest::Request& r) {
     };
 }
 
-rest::Response ServiceController::deleteAnimalFromCompound(const rest::Request& r) {
+rest::Response AnimalServiceController::deleteAnimalFromCompound(const rest::Request& r) {
     const auto deleteResourceId = tryDelete(r.target());
     if(!deleteResourceId) {
         return kBadRequest;
@@ -236,7 +239,7 @@ rest::Response ServiceController::deleteAnimalFromCompound(const rest::Request& 
     };
 }
 
-rest::Response ServiceController::getAllAnimalsBySpecies(const rest::Request& r) {
+rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Request& r) {
     boost::cmatch matches;
     const auto& target = r.target();
     if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getAnimalsBySpecies)
@@ -262,16 +265,16 @@ rest::Response ServiceController::getAllAnimalsBySpecies(const rest::Request& r)
     }
 }
 
-std::string ServiceController::parse(std::string_view target, const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
+std::string AnimalServiceController::parse(const std::string& baseUri, const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
     json::object object{{"compounds", json::array()}};
     for (auto compoundRef: compounds) {
         const auto animalRefs = m_animalService->getAnimalsByIds(compoundRef.get().getAnimals());
-        object["compounds"].as_array().emplace_back(toJson(target, compoundRef, animalRefs));
+        object["compounds"].as_array().emplace_back(toJson(baseUri, compoundRef, animalRefs));
     }
     return json::serialize(json::array().emplace_back(std::move(object)));
 }
 
-std::optional<std::size_t> ServiceController::tryAdd(std::string_view body) const {
+std::optional<std::size_t> AnimalServiceController::tryAdd(std::string_view body) const {
     try {
         const auto json = json::parse(body);
         auto name = std::string(json.at("name").as_string());
@@ -288,7 +291,7 @@ std::optional<std::size_t> ServiceController::tryAdd(std::string_view body) cons
     }
 }
 
-std::optional<ServiceController::DeleteResourceId> ServiceController::tryDelete(std::string_view body) const {
+std::optional<AnimalServiceController::DeleteResourceId> AnimalServiceController::tryDelete(std::string_view body) const {
     boost::cmatch matches;
     if(!regex_search(body.begin(), body.end(), matches, rest::routes::deleteAnimalByCompound)
         || matches.size() != 3) {
