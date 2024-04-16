@@ -17,81 +17,6 @@
 
 namespace json = boost::json;
 
-namespace {
-
-json::array makeHypermediaLinks(const std::string& baseUri, const std::string& resourceId) {
-    return json::array{
-            json::object{
-                { "rel", "self" },
-                { "href", baseUri + "/" + resourceId }
-            },
-            json::object{
-                { "rel", "add" },
-                { "href", baseUri + "/" + resourceId  + "/animals"},
-                {"title", "Adds an animal to the compound"}
-            },
-            json::object{
-                { "rel", "all" },
-                { "href", baseUri }
-            }
-    };
-}
-
-json::array makeHypermediaLinks(
-    const std::string& baseUri,
-    const std::string& compoundId,
-    const std::string& animalId,
-    const std::string& animalSpecies) {
-    return {
-        { "self", baseUri + "/" + compoundId + "/" + animalId },
-        { "species", baseUri + "/animals/" + animalSpecies},
-        { "delete", baseUri + "/animals/"}
-    };
-}
-
-json::object toJson(std::reference_wrapper<const zoo::Animal> animalRef) {
-    const auto& animal = animalRef.get();
-    auto links = makeHypermediaLinks("", "", animal.getName(), animal.getSpeciesString());
-    return json::object{
-        {"id", animal.getId()},
-        {"name", animal.getName()},
-        {"age", animal.getAge()},
-        {"species", animal.getSpeciesString()},
-        {"_links", json::array(std::move(links))}
-        };
-}
-
-json::object toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
-    json::object object{{"animals", json::array()}};
-    for(auto animalRef : animalRefs) {
-        object["animals"].as_array().emplace_back(toJson(animalRef));
-    }
-    return object;
-}
-
-json::object toJson(
-    const std::string& baseUri,
-    std::reference_wrapper<const zoo::Compound> compoundRef,
-    const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
-    const auto& compound = compoundRef.get();
-    auto links = makeHypermediaLinks(baseUri, compound.getName());
-    json::object object {
-        {"id", compound.getId()},
-        {"name", compound.getName()},
-        {"size", compound.getSize()},
-        {"animals", json::array()},
-        {"_links", std::move(links)}
-    };
-
-    for(auto animalRef : animalRefs) {
-        object["animals"].as_array().emplace_back(toJson(animalRef));
-    }
-
-    return object;
-}
-
-}
-
 namespace zoo {
 
 static const rest::Response kNotFoundResponse {
@@ -112,16 +37,13 @@ static const rest::Response kInternalError {
     rest::kTextPlain.data()
 };
 
-static const std::string kCompoundsRootUri = "/compound";
-static const std::string kAnimalsRootUri = "/animals";
-
 AnimalServiceController::AnimalServiceController(std::unique_ptr<AnimalRepository> animalService, std::unique_ptr<CompoundRepository> compoundService)
     : m_animalService(std::move(animalService)),
       m_compoundService(std::move(compoundService)) {}
 
 rest::Response AnimalServiceController::getAllCompounds() const {
     const auto compounds = m_compoundService->getAllTargetEntities();
-    auto body = parse(kCompoundsRootUri, compounds);
+    auto body = parse(compounds);
     if (body.empty()) {
         return kNotFoundResponse;
     }
@@ -143,7 +65,7 @@ rest::Response AnimalServiceController::getCompoundByName(const rest::Request& r
     if (!compound) {
         return kNotFoundResponse;
     }
-    std::string body = parse(kCompoundsRootUri, {*compound});
+    std::string body = parse({*compound});
     return {
         rest::http::status::ok,
         std::move(body),
@@ -162,7 +84,7 @@ rest::Response AnimalServiceController::getAnimalByName(const rest::Request& r) 
     if (!animal) {
         return kNotFoundResponse;
     }
-    std::string body = json::serialize(json::array().emplace_back(toJson(*animal)));
+    std::string body = json::serialize(json::array().emplace_back(hateos::animals::toJson("", *animal)));
     return {
         rest::http::status::ok,
         std::move(body),
@@ -178,27 +100,28 @@ rest::Response AnimalServiceController::addAnimalToCompound(const rest::Request&
         return kBadRequest;
     }
 
-    const auto compound = m_compoundService->getEntityByName(matches[1].str());
-    if (!compound) {
+    const auto matchedCompound = m_compoundService->getEntityByName(matches[1].str());
+    if (!matchedCompound) {
         return kNotFoundResponse;
     }
+    const auto& compound = matchedCompound.value().get();
 
-    const auto animalId = tryAdd(r.body());
-    if(!animalId) {
+    const auto createdAnimal = tryAdd(r.body());
+    if(!createdAnimal) {
         return kBadRequest;
     }
 
-    if(!m_compoundService->addAnimal(*compound, *animalId)) {
-        [[maybe_unused]] const auto _ = m_animalService->deleteAnimal(*animalId);
+    if(!m_compoundService->addAnimal(*matchedCompound, *createdAnimal)) {
+        [[maybe_unused]] const auto _ = m_animalService->deleteAnimal(*createdAnimal);
         return kBadRequest;
     }
 
-    const auto animal = m_animalService->getEntityById(*animalId);
-    if(!animal) {
+    const auto matchedAnimal = m_animalService->getEntityById(*createdAnimal);
+    if(!matchedAnimal) {
         return kInternalError;
     }
 
-    std::string body = json::serialize(json::array().emplace_back(toJson(*animal)));
+    std::string body = json::serialize(json::array().emplace_back(hateos::animals::toJson(compound.getName(), *matchedAnimal)));
     return {
         rest::http::status::ok,
         std::move(body),
@@ -255,7 +178,7 @@ rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Reque
         auto filteredView = animals
                 | std::ranges::views::filter([species](auto animal) { return animal.get().getSpecies() == species; })
                 | std::views::common;
-        std::string body = json::serialize(json::array().emplace_back(toJson({filteredView.begin(), filteredView.end()})));
+        std::string body = json::serialize(json::array().emplace_back(hateos::animals::toJson("",{filteredView.begin(), filteredView.end()})));
         return {
             rest::http::status::ok,
             std::move(body),
@@ -266,11 +189,11 @@ rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Reque
     }
 }
 
-std::string AnimalServiceController::parse(const std::string& baseUri, const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
+std::string AnimalServiceController::parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
     json::object object{{"compounds", json::array()}};
     for (auto compoundRef: compounds) {
         const auto animalRefs = m_animalService->getAnimalsByIds(compoundRef.get().getAnimals());
-        object["compounds"].as_array().emplace_back(toJson(baseUri, compoundRef, animalRefs));
+        object["compounds"].as_array().emplace_back(hateos::compounds::toJson(compoundRef, animalRefs));
     }
     return json::serialize(json::array().emplace_back(std::move(object)));
 }

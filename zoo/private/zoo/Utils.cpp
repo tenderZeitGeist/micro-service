@@ -11,28 +11,33 @@ namespace hateos {
 
 namespace animals {
 
-json::array makeHypermediaLinks(const std::string& baseUri, const std::string& compoundId, const std::string& animalId, const std::string& animalSpecies) {
+json::array makeHypermediaLinks(const std::string& compoundId, const std::string& animalId, const std::string& animalSpecies) {
     return {
         json::object{
                 { "rel", "self" },
-                { "href", baseUri + "/" + compoundId + "/" + animalId }
+                { "href",  + "/animals/" + animalId }
         },
         json::object {
-            { "rel", "all" },
-            { "href", baseUri + "/animals/" + animalSpecies },
+            { "rel", "species" },
+            { "href", "/animals/species/" + animalSpecies },
             {"title", "Retrieve all animals from that species"}
         },
         json::object {
+            {"rel", "getCoumpound"},
+            { "href", "/compounds/" + compoundId},
+            {"title", "Get associated compound" }
+        },
+        json::object {
             {"rel", "delete"},
-            { "href", baseUri + "/" + compoundId + "/" + animalId },
+            { "href", "/compounds/" + compoundId + "/animals/" + animalId },
             {"title", "Deletes this species from the aforementioned compound"}
         }
     };
 }
 
-json::object toJson(std::reference_wrapper<const zoo::Animal> animalRef) {
+json::object toJson(const std::string& compoundId, std::reference_wrapper<const zoo::Animal> animalRef) {
     const auto& animal = animalRef.get();
-    auto links = makeHypermediaLinks("", "", animal.getName(), animal.getSpeciesString());
+    auto links = makeHypermediaLinks(compoundId, animal.getName(), animal.getSpeciesString());
     return json::object{
         {"id", animal.getId()},
         {"name", animal.getName()},
@@ -42,10 +47,10 @@ json::object toJson(std::reference_wrapper<const zoo::Animal> animalRef) {
         };
 }
 
-json::object toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
+json::object toJson(const std::string& compoundId, const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
     json::object object{{"animals", json::array()}};
     for(auto animalRef : animalRefs) {
-        object["animals"].as_array().emplace_back(toJson(animalRef));
+        object["animals"].as_array().emplace_back(toJson(compoundId, animalRef));
     }
     return object;
 }
@@ -53,27 +58,27 @@ json::object toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>
 }
 
 namespace compounds {
-json::array makeHypermediaLinks(const std::string& baseUri, const std::string& resourceId) {
+json::array makeHypermediaLinks(const std::string& compoundId) {
     return json::array{
             json::object{
                 { "rel", "self" },
-                { "href", baseUri + "/" + resourceId }
+                { "href", "/compounds/" + compoundId }
             },
             json::object{
                 { "rel", "add" },
-                { "href", baseUri + "/" + resourceId  + "/animals"},
+                { "href", "/compounds/" + compoundId  + "/animals"},
                 {"title", "Adds an animal to the compound"}
             },
             json::object{
                 { "rel", "all" },
-                { "href", baseUri }
+                { "href", "/compounds" }
             }
     };
 }
 
-json::object toJson(const std::string& baseUri, std::reference_wrapper<const zoo::Compound> compoundRef, const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
+json::object toJson(std::reference_wrapper<const zoo::Compound> compoundRef, const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
     const auto& compound = compoundRef.get();
-    auto links = makeHypermediaLinks(baseUri, compound.getName());
+    auto links = makeHypermediaLinks(compound.getName());
     json::object object {
         {"id", compound.getId()},
         {"name", compound.getName()},
@@ -83,7 +88,7 @@ json::object toJson(const std::string& baseUri, std::reference_wrapper<const zoo
     };
 
     for(auto animalRef : animalRefs) {
-        object["animals"].as_array().emplace_back(animals::toJson(animalRef));
+        object["animals"].as_array().emplace_back(animals::toJson(compound.getName(), animalRef));
     }
 
     return object;

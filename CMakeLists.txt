@@ -10,6 +10,7 @@ message(STATUS "Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 option(USE_SYSTEM_BOOST "Use system boost" Off)
+option(ENABLE_UNIT_TESTS "Enables unit tests" Off)
 
 find_package(Boost QUIET)
 
@@ -55,3 +56,7 @@ target_link_libraries(
     core
     ${Boost_LIBRARIES}
 )
+
+if(ENABLE_UNIT_TESTS)
+    add_subdirectory(tests)
+endif()
