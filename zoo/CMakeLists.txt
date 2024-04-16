@@ -16,6 +16,8 @@ set(ZOO_HEADER_FILES
     "${DIR_INCLUDE}/zoo/services/AnimalServiceController.hpp"
     "${DIR_INCLUDE}/zoo/services/AnimalRepository.hpp"
     "${DIR_INCLUDE}/zoo/services/CompoundRepository.hpp"
+
+    "${DIR_PRIVATE}/zoo/Utils.hpp"
 )
 
 set(ZOO_SOURCE_FILES
@@ -28,11 +30,8 @@ set(ZOO_SOURCE_FILES
     "${DIR_SOURCE}/services/AnimalServiceController.cpp"
     "${DIR_SOURCE}/services/AnimalRepository.cpp"
     "${DIR_SOURCE}/services/CompoundRepository.cpp"
-)
 
-set(PRIVATE_FILES
-    "${DIR_PRIVATE}/Utils.cpp"
-    "${DIR_PRIVATE}/Utils.hpp"
+    "${DIR_PRIVATE}/zoo/Utils.cpp"
 )
 
 file(
@@ -51,7 +50,6 @@ add_library(
     STATIC
         ${ZOO_HEADER_FILES}
         ${ZOO_SOURCE_FILES}
-        ${PRIVATE_FILES}
 )
 
 target_link_libraries(

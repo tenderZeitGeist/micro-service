@@ -18,7 +18,7 @@ namespace zoo {
     };
 
     class Animal
-        : public core::database::Entity{
+        : public core::database::Entity {
         static const std::array<const std::string, 4> kSpeciesStrings;
     public:
         explicit Animal(std::string name, std::size_t age, Species species);

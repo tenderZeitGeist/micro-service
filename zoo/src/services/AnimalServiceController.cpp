@@ -8,6 +8,7 @@
 #include <zoo/compound/Compound.hpp>
 #include <zoo/services/AnimalRepository.hpp>
 #include <zoo/services/CompoundRepository.hpp>
+#include <zoo/Utils.hpp>
 
 #include <boost/regex.hpp>
 #include <boost/json.hpp>
@@ -18,9 +19,8 @@ namespace json = boost::json;
 
 namespace {
 
-json::object makeHypermediaLinks(const std::string& baseUri, const std::string& resourceId) {
-    return {
-        { "_links", json::array{
+json::array makeHypermediaLinks(const std::string& baseUri, const std::string& resourceId) {
+    return json::array{
             json::object{
                 { "rel", "self" },
                 { "href", baseUri + "/" + resourceId }
@@ -34,11 +34,10 @@ json::object makeHypermediaLinks(const std::string& baseUri, const std::string& 
                 { "rel", "all" },
                 { "href", baseUri }
             }
-        }}
     };
 }
 
-json::object makeHypermediaLinks(
+json::array makeHypermediaLinks(
     const std::string& baseUri,
     const std::string& compoundId,
     const std::string& animalId,
@@ -52,11 +51,13 @@ json::object makeHypermediaLinks(
 
 json::object toJson(std::reference_wrapper<const zoo::Animal> animalRef) {
     const auto& animal = animalRef.get();
+    auto links = makeHypermediaLinks("", "", animal.getName(), animal.getSpeciesString());
     return json::object{
         {"id", animal.getId()},
         {"name", animal.getName()},
         {"age", animal.getAge()},
-        {"species", animal.getSpeciesString()}
+        {"species", animal.getSpeciesString()},
+        {"_links", json::array(std::move(links))}
         };
 }
 
@@ -70,9 +71,9 @@ json::object toJson(const std::vector<std::reference_wrapper<const zoo::Animal>>
 
 json::object toJson(
     const std::string& baseUri,
-    std::reference_wrapper<const zoo::Compound> comoundRef,
+    std::reference_wrapper<const zoo::Compound> compoundRef,
     const std::vector<std::reference_wrapper<const zoo::Animal>>& animalRefs) {
-    const auto& compound = comoundRef.get();
+    const auto& compound = compoundRef.get();
     auto links = makeHypermediaLinks(baseUri, compound.getName());
     json::object object {
         {"id", compound.getId()},
