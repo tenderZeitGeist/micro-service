@@ -14,10 +14,6 @@
 #include <filesystem>
 #include <vector>
 
-namespace {
-    std::atomic_size_t kCounter = 0;
-}
-
 namespace zoo::database {
 
 using namespace core::database;
@@ -50,7 +46,7 @@ bool InMemoryDatabase::deleteEntity(std::shared_ptr<Entity> entity) {
 }
 
 std::size_t InMemoryDatabase::addEntity(std::shared_ptr<Entity> entity) {
-    entity->setId(++kCounter);
+    setEntityId(entity.get());
     const auto id = entity->getId();
     m_entities.emplace(id, std::move(entity));
     return id;

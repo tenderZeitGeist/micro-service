@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-#include "zoo/database/InMemoryDatabase.hpp"
+#include "DatabaseInterface.hpp"
 
 namespace core::database {
 
@@ -17,7 +17,7 @@ public:
 protected:
     std::size_t m_id{};
 private:
-    friend class zoo::database::InMemoryDatabase;
+    friend class core::database::DatabaseInterface;
     void setId(std::size_t id);
 };
 

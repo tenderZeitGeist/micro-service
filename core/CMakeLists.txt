@@ -14,6 +14,7 @@ set(SERVICES_HEADER_FILES
 )
 
 set(SERVICES_SOURCE_FILES
+    "${DIR_SOURCE}/database/DatabaseInterface.cpp"
     "${DIR_SOURCE}/database/Entity.cpp"
 )
 
