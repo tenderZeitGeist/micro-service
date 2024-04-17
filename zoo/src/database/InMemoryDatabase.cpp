@@ -36,10 +36,8 @@ std::shared_ptr<Entity> InMemoryDatabase::getEntityById(std::size_t id) {
 }
 
 std::vector<std::shared_ptr<Entity>> InMemoryDatabase::getAllEntities() {
-    std::vector<std::shared_ptr<Entity>> results;
-    results.reserve(m_entities.size());
-    std::ranges::copy(m_entities | std::views::values, std::back_inserter(results));
-    return results;
+    auto view = m_entities | std::views::values | std::views::common;
+    return {view.begin(), view.end()};
 }
 
 bool InMemoryDatabase::deleteEntity(std::shared_ptr<Entity> entity) {
