@@ -95,7 +95,9 @@ void InMemoryDatabase::initCompound(std::string_view fileName) {
             std::abort();
         }
     }
-    addEntity(std::move(pettingZoo));
+    if(!addEntity(std::move(pettingZoo))) {
+        std::abort();
+    }
 }
 
 }
