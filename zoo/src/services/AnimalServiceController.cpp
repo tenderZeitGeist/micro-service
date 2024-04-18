@@ -22,19 +22,19 @@ namespace zoo {
 static const rest::Response kNotFoundResponse {
     rest::http::status::not_found,
     "The resource couldn't be located",
-    rest::kTextPlain.data()
+    rest::kTextPlain
 };
 
 static const rest::Response kBadRequest {
     rest::http::status::bad_request,
     "The request contains insufficient or false data",
-    rest::kTextPlain.data()
+    rest::kTextPlain
 };
 
 static const rest::Response kInternalError {
     rest::http::status::internal_server_error,
     "The request couldn't be processed because of an internal error",
-    rest::kTextPlain.data()
+    rest::kTextPlain
 };
 
 AnimalServiceController::AnimalServiceController(std::unique_ptr<AnimalRepository> animalService, std::unique_ptr<CompoundRepository> compoundService)
@@ -50,7 +50,7 @@ rest::Response AnimalServiceController::getAllCompounds() const {
     return rest::Response{
         rest::http::status::ok,
         std::move(body),
-        rest::kJson.data()
+        rest::kJson
     };
 }
 
@@ -69,7 +69,7 @@ rest::Response AnimalServiceController::getCompoundByName(const rest::Request& r
     return {
         rest::http::status::ok,
         std::move(body),
-        rest::kJson.data()
+        rest::kJson
     };
 }
 
@@ -88,7 +88,7 @@ rest::Response AnimalServiceController::getAnimalByName(const rest::Request& r) 
     return {
         rest::http::status::ok,
         std::move(body),
-        rest::kJson.data()
+        rest::kJson
     };
 }
 
@@ -125,7 +125,7 @@ rest::Response AnimalServiceController::addAnimalToCompound(const rest::Request&
     return {
         rest::http::status::ok,
         std::move(body),
-        rest::kJson.data()
+        rest::kJson
     };
 }
 
@@ -182,7 +182,7 @@ rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Reque
         return {
             rest::http::status::ok,
             std::move(body),
-            rest::kJson.data()
+            rest::kJson
         };
     } catch (const std::exception&) {
         return kBadRequest;
