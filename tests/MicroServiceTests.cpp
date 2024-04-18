@@ -124,15 +124,26 @@ protected:
         );
     }
 
+    long getResponseInfo(CURL* curl) {
+        long httpStatus = -1;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatus);
+        return httpStatus;
+    }
+
     void performGetRequest(std::string_view url) {
         CURL* curl = curl_easy_init();
         ASSERT_TRUE(curl);
+
         curl_easy_setopt(curl, CURLOPT_URL, url.data());
         std::string responseBuffer;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
         const CURLcode res = curl_easy_perform(curl);
+        const auto httpStatus = getResponseInfo(curl);
         EXPECT_EQ(res, CURLE_OK);
+        EXPECT_EQ(httpStatus, 200);
+
         std::cerr << responseBuffer << '\n';
         curl_easy_cleanup(curl);
     }
@@ -140,14 +151,21 @@ protected:
     void performPostRequest(std::string_view url, const std::string& payload) {
         CURL* curl = curl_easy_init();
         ASSERT_TRUE(curl);
+
         curl_easy_setopt(curl, CURLOPT_URL, url.data());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, payload.size());
+
         std::string responseBuffer;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
         const CURLcode res = curl_easy_perform(curl);
+        const auto httpStatus = getResponseInfo(curl);
+
         EXPECT_EQ(res, CURLE_OK);
+        EXPECT_EQ(httpStatus, 200);
+
         std::cerr << responseBuffer << '\n';
         curl_easy_cleanup(curl);
     }
@@ -155,13 +173,19 @@ protected:
     void performDeleteRequest(std::string_view url) {
         CURL* curl = curl_easy_init();
         ASSERT_TRUE(curl);
+
         curl_easy_setopt(curl, CURLOPT_URL, url.data());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+
         std::string responseBuffer;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
         const CURLcode res = curl_easy_perform(curl);
+        const auto httpStatus = getResponseInfo(curl);
         EXPECT_EQ(res, CURLE_OK);
+        EXPECT_EQ(httpStatus, 204);
+
         std::cerr << responseBuffer << '\n';
         curl_easy_cleanup(curl);
     }

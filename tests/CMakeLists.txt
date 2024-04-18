@@ -1,5 +1,6 @@
-set(EXECUTABLE micro-service-tests)
+set(PROJECT_TEST ${PROJECT_NAME}-test)
 
+project(PROJECT_TEST)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -10,7 +11,9 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-set(DIR_SOURCE ${CMAKE_CURRENT_LIST_DIR})
+set(DIR_SOURCE
+    ${CMAKE_CURRENT_LIST_DIR}
+)
 
 set(
     MICRO_SERVICE_TEST_FILES
@@ -22,12 +25,12 @@ find_package(CURL REQUIRED)
 enable_testing()
 
 add_executable(
-    ${EXECUTABLE}
+    ${PROJECT_TEST}
     ${MICRO_SERVICE_TEST_FILES}
 )
 
 target_link_libraries(
-    ${EXECUTABLE}
+    ${PROJECT_TEST}
     core
     rest
     zoo
