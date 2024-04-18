@@ -28,7 +28,7 @@ namespace rest {
         void readRequest();
         void processRequest(const HttpRequest& request);
         void send();
-        void prepareResponse(http::status status, const std::string& body, std::string_view mimeType);
+        void prepareResponse(http::status status, std::string body, std::string_view mimeType);
         void checkTimeout();
 
         std::reference_wrapper<Tcp::acceptor> m_acceptor;

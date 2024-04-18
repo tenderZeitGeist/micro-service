@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace rest{
+namespace rest {
 
     HttpWorker::HttpWorker(std::reference_wrapper<Tcp::acceptor> acceptor,
                                  std::reference_wrapper<const Controller> controller)
@@ -52,8 +52,8 @@ namespace rest{
     }
 
     void HttpWorker::processRequest(const HttpRequest& request) {
-        Response response = m_controller.get().execute(request);
-        prepareResponse(response.status, response.body, response.mimeType);
+        auto [status, body, mimeType] = m_controller.get().execute(request);
+        prepareResponse(status, std::move(body), mimeType);
     }
 
     void HttpWorker::send() {
@@ -67,10 +67,10 @@ namespace rest{
             });
     }
 
-    void HttpWorker::prepareResponse(http::status status, const std::string& body, std::string_view mimeType) {
+    void HttpWorker::prepareResponse(http::status status, std::string body, std::string_view mimeType) {
         m_response = std::make_unique<HttpResponse>();
         m_response->result(status);
-        m_response->body() = body;
+        m_response->body() = std::move(body);
         m_response->set(http::field::content_type, mimeType);
         m_response->set(http::field::server, kServerInfo);
         m_response->set(http::field::access_control_allow_origin, "");
