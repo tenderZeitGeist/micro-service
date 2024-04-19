@@ -59,7 +59,7 @@ std::string Animal::speciesToString(Species species) {
         case zoo::Species::BIRD:
             return "Bird";
     }
-    throw std::exception();
+    throw std::invalid_argument("An invalid arguments has been passed.");
 }
 
 Species Animal::stringToSpecies(const std::string& speciesString) {
@@ -77,7 +77,7 @@ Species Animal::stringToSpecies(const std::string& speciesString) {
     if (lowerCase == "bird") {
         return zoo::Species::BIRD;
     }
-    throw std::exception();
+    throw std::invalid_argument("An invalid arguments has been passed.");
 }
 
 }

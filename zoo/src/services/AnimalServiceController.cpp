@@ -13,17 +13,24 @@
 #include <boost/regex.hpp>
 #include <boost/json.hpp>
 
-#include <iostream>
-
 namespace json = boost::json;
 
 namespace {
+
+std::optional<std::string> extractResourceId(std::string_view target, const rest::Endpoint& endpoint) {
+    boost::cmatch matches;
+    if (boost::regex_search(target.begin(), target.end(), matches, endpoint) && matches.size() == 2) {
+        return std::make_optional<std::string>(matches[1].str());
+    }
+    return std::nullopt;
+}
+
 std::optional<zoo::Species> speciesStringToSpecies(const std::string& speciesString)
-        try {
-            return std::make_optional<zoo::Species>(zoo::Animal::stringToSpecies(speciesString));
-        } catch (const std::invalid_argument&) {
-            return std::nullopt;
-        }
+try {
+    return std::make_optional<zoo::Species>(zoo::Animal::stringToSpecies(speciesString));
+} catch (const std::invalid_argument&) {
+    return std::nullopt;
+}
 }
 
 namespace zoo {
@@ -64,16 +71,16 @@ rest::Response AnimalServiceController::getAllCompounds() const {
 }
 
 rest::Response AnimalServiceController::getCompoundByName(const rest::Request& r) const {
-    boost::cmatch matches;
-    const auto& target = r.target();
-    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getCompoundByName)
-        || matches.size() != 2) {
+    const auto resourceId = extractResourceId(r.target(), rest::routes::getCompoundByName);
+    if (!resourceId) {
         return kBadRequest;
     }
-    const auto compound = m_compoundService->getEntityByName(matches[1].str());
+
+    const auto compound = m_compoundService->getEntityByName(*resourceId);
     if (!compound) {
         return kNotFoundResponse;
     }
+
     std::string body = parse({*compound});
     return {
         rest::http::status::ok,
@@ -83,17 +90,23 @@ rest::Response AnimalServiceController::getCompoundByName(const rest::Request& r
 }
 
 rest::Response AnimalServiceController::getAnimalByName(const rest::Request& r) const {
-    boost::cmatch matches;
-    const auto& target = r.target();
-    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getAnimalByName)
-        || matches.size() != 2) {
+    const auto resourceId = extractResourceId(r.target(), rest::routes::getAnimalByName);
+    if (!resourceId) {
         return kBadRequest;
     }
-    const auto animal = m_animalService->getEntityByName(matches[1].str());
-    if (!animal) {
+
+    const auto matchedAnimal = m_animalService->getEntityByName(*resourceId);
+    if (!matchedAnimal) {
         return kNotFoundResponse;
     }
-    std::string body = json::serialize(json::array().emplace_back(hateos::animals::toJson("", *animal)));
+
+    const auto animal = matchedAnimal.value().get();
+    const auto matchedCompound = m_compoundService->findCompoundByAnimalId(animal.getId());
+    if (!matchedCompound) {
+        return kInternalError;
+    }
+
+    std::string body = json::serialize(json::array().emplace_back(hateos::animals::toJson(*matchedCompound, animal)));
     return {
         rest::http::status::ok,
         std::move(body),
@@ -102,31 +115,30 @@ rest::Response AnimalServiceController::getAnimalByName(const rest::Request& r) 
 }
 
 rest::Response AnimalServiceController::addAnimalToCompound(const rest::Request& r) {
-    boost::cmatch matches;
-    const auto& target = r.target();
-    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::postAnimalByCompound)
-        || matches.size() != 2) {
+    const auto resourceId = extractResourceId(r.target(), rest::routes::postAnimalByCompound);
+    if (!resourceId) {
         return kBadRequest;
     }
 
-    const auto matchedCompound = m_compoundService->getEntityByName(matches[1].str());
+    const auto matchedCompound = m_compoundService->getEntityByName(*resourceId);
     if (!matchedCompound) {
         return kNotFoundResponse;
     }
+
     const auto& compound = matchedCompound.value().get();
-
     const auto createdAnimal = tryAdd(r.body());
-    if(!createdAnimal) {
+    if (!createdAnimal) {
         return kBadRequest;
     }
 
-    if(!m_compoundService->addAnimal(*matchedCompound, *createdAnimal)) {
-        [[maybe_unused]] const auto _ = m_animalService->deleteAnimal(*createdAnimal);
+    const auto animalId = *createdAnimal;
+    if (!m_compoundService->addAnimal(std::cref(compound), animalId)) {
+        [[maybe_unused]] const auto _ = m_animalService->deleteAnimal(animalId);
         return kBadRequest;
     }
 
-    const auto matchedAnimal = m_animalService->getEntityById(*createdAnimal);
-    if(!matchedAnimal) {
+    const auto matchedAnimal = m_animalService->getEntityById(animalId);
+    if (!matchedAnimal) {
         return kInternalError;
     }
 
@@ -140,29 +152,36 @@ rest::Response AnimalServiceController::addAnimalToCompound(const rest::Request&
 
 rest::Response AnimalServiceController::deleteAnimalFromCompound(const rest::Request& r) {
     const auto deleteResourceId = tryDelete(r.target());
-    if(!deleteResourceId) {
+    if (!deleteResourceId) {
         return kBadRequest;
     }
+
     const auto& [compoundName, animalName] = *deleteResourceId;
-    const auto compoundRef = m_compoundService->getEntityByName(compoundName);
-    if(!compoundRef) {
-        return kBadRequest;
-    }
-    const auto animalRef = m_animalService->getEntityByName(animalName);
-    if(!animalRef) {
+    const auto matchedCompound = m_compoundService->getEntityByName(compoundName);
+    if (!matchedCompound) {
         return kBadRequest;
     }
 
-    const auto animalIds = compoundRef.value().get().getAnimals();
-    const auto searchedId = animalRef.value().get().getId();
-
-    if(!std::ranges::any_of(animalIds, [searchedId](std::size_t id) { return id == searchedId; })) {
+    const auto matchedAnimal = m_animalService->getEntityByName(animalName);
+    if (!matchedAnimal) {
         return kBadRequest;
     }
 
-    const auto success = m_compoundService->deleteAnimal(*compoundRef, searchedId)
-                          && m_animalService->deleteAnimal(searchedId);
-    if(!success) {
+    const auto animalIds = matchedCompound.value().get().getAnimals();
+    const auto searchedId = matchedAnimal.value().get().getId();
+
+    if (!std::ranges::any_of(
+        animalIds,
+        [searchedId](std::size_t id) {
+            return id == searchedId;
+        }
+    )) {
+        return kBadRequest;
+    }
+
+    const auto success = m_compoundService->deleteAnimal(*matchedCompound, searchedId)
+                         && m_animalService->deleteAnimal(searchedId);
+    if (!success) {
         return kInternalError;
     }
 
@@ -173,21 +192,23 @@ rest::Response AnimalServiceController::deleteAnimalFromCompound(const rest::Req
 }
 
 rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Request& r) {
-    boost::cmatch matches;
-    const auto& target = r.target();
-    if(!boost::regex_search(target.begin(), target.end(), matches, rest::routes::getAnimalsBySpecies)
-        || matches.size() != 2) {
+    const auto resourceId = extractResourceId(r.target(), rest::routes::getAnimalsBySpecies);
+    if (!resourceId) {
         return kBadRequest;
     }
 
-    const auto species = speciesStringToSpecies(matches[1].str());
-    if(!species) {
+    const auto species = speciesStringToSpecies(*resourceId);
+    if (!species) {
         return kBadRequest;
     }
 
     const auto animals = m_animalService->getAllTargetEntities();
     auto filteredView = animals
-                        | std::ranges::views::filter([species](auto animal) { return animal.get().getSpecies() == species; })
+                        | std::ranges::views::filter(
+                            [species](auto animal) {
+                                return animal.get().getSpecies() == species;
+                            }
+                        )
                         | std::views::common;
 
     std::string body;
@@ -214,9 +235,9 @@ std::string AnimalServiceController::parse(const std::vector<std::reference_wrap
 
 std::string AnimalServiceController::parse(const std::vector<std::reference_wrapper<const Animal>>& animals) const {
     json::object object{{"animals", json::array()}};
-    for(auto animalRef : animals) {
+    for (auto animalRef: animals) {
         const auto compoundId = m_compoundService->findCompoundByAnimalId(animalRef.get().getId());
-        if(!compoundId) {
+        if (!compoundId) {
             throw std::logic_error("An animal needs to be linked to a compound. Aborting process.");
         }
         object["animals"].as_array().emplace_back(hateos::animals::toJson(*compoundId, animalRef));
@@ -232,18 +253,16 @@ std::optional<std::size_t> AnimalServiceController::tryAdd(std::string_view body
         auto species = std::string(json.at("species").as_string());
         auto animal = std::make_shared<Animal>(std::move(name), age, std::move(species));
         return std::make_optional(m_animalService->addAnimal(std::move(animal)));
-    } catch (const json::system_error& e) {
-        std::cerr << e.what() << '\n';
+    } catch (const json::system_error&) {
         return std::nullopt;
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << '\n';
+    } catch (const std::invalid_argument&) {
         return std::nullopt;
     }
 }
 
 std::optional<AnimalServiceController::DeleteResourceId> AnimalServiceController::tryDelete(std::string_view body) const {
     boost::cmatch matches;
-    if(!regex_search(body.begin(), body.end(), matches, rest::routes::deleteAnimalByCompound)
+    if (!regex_search(body.begin(), body.end(), matches, rest::routes::deleteAnimalByCompound)
         || matches.size() != 3) {
         return std::nullopt;
     }
