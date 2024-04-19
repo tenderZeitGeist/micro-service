@@ -22,6 +22,7 @@ public:
     [[nodiscard]] std::vector<std::size_t> getAnimals() const;
     [[nodiscard]] bool addAnimal(std::size_t id);
     [[nodiscard]] bool deleteAnimal(std::size_t id);
+    [[nodiscard]] bool hasAnimal(std::size_t id) const;
 
 private:
     std::string m_name;

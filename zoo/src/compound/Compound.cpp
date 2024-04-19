@@ -29,7 +29,7 @@ std::vector<std::size_t> Compound::getAnimals() const {
 }
 
 bool Compound::addAnimal(std::size_t id) {
-    if(m_animals.contains(id)) {
+    if(hasAnimal(id)) {
        return false;
     }
     m_animals.emplace(id);
@@ -37,11 +37,15 @@ bool Compound::addAnimal(std::size_t id) {
 }
 
 bool Compound::deleteAnimal(std::size_t id) {
-    if(!m_animals.contains(id)) {
+    if(!hasAnimal(id)) {
         return false;
     }
     m_animals.erase(id);
     return true;
+}
+
+bool Compound::hasAnimal(std::size_t id) const {
+    return m_animals.contains(id);
 }
 
 }
