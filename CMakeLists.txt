@@ -17,12 +17,10 @@ message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 
-#Subdirs
 add_subdirectory(core)
 add_subdirectory(rest)
 add_subdirectory(zoo)
 
-#Source files
 set(SOURCE_FILES
     ${REST_SOURCE_FILES}
     ${ZOO_SOURCE_FILES}

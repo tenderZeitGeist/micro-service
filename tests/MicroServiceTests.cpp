@@ -197,13 +197,15 @@ protected:
 };
 
 TEST_F(MicroServiceTestSuite, micro_service_api_integration_test) {
+    std::cout << "\nStarting test suite for micro-service app" << "\n";
+
     for (const auto getRequest: {
              "http://localhost:8080/compounds",
              "http://localhost:8080/compounds/Foo",
              "http://localhost:8080/animals/Foo",
              "http://localhost:8080/animals/species/Mammal"
          }) {
-        std::cout << "\n\nQuerriyng GET request on URL " << getRequest << '\n';
+        std::cout << "\nQuerriyng GET request on URL " << getRequest << '\n';
         performGetRequest(getRequest);
     }
 
@@ -216,10 +218,12 @@ TEST_F(MicroServiceTestSuite, micro_service_api_integration_test) {
     );
 
     constexpr auto postRequest = "http://localhost:8080/compounds/Foo/animals";
+    std::cout << "\nAdding animal Foo to compound via POST request on URL " << postRequest << '\n';
     performPostRequest(postRequest, animalPayload);
-    std::cout << "\n\nQuerriyng POST request on URL " << postRequest << '\n';
 
     constexpr auto deleteRequest = "http://localhost:8080/compounds/Foo/animals/Bar";
-    std::cout << "\n\nQuerriyng DELETE request on URL " << deleteRequest << '\n';
+    std::cout << "\nDeleting animal Foo via DELETE request on URL " << deleteRequest << '\n';
     performDeleteRequest("http://localhost:8080/compounds/Foo/animals/Bar");
+
+    std::cout << "\nFinished test suite for micro-service app" << "\n";
 }
