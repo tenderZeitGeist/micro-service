@@ -144,7 +144,7 @@ protected:
         EXPECT_EQ(res, CURLE_OK);
         EXPECT_EQ(httpStatus, 200);
 
-        std::cerr << responseBuffer << '\n';
+        std::cout << responseBuffer << '\n';
         curl_easy_cleanup(curl);
     }
 
@@ -166,7 +166,7 @@ protected:
         EXPECT_EQ(res, CURLE_OK);
         EXPECT_EQ(httpStatus, 200);
 
-        std::cerr << responseBuffer << '\n';
+        std::cout << responseBuffer << '\n';
         curl_easy_cleanup(curl);
     }
 
@@ -186,7 +186,7 @@ protected:
         EXPECT_EQ(res, CURLE_OK);
         EXPECT_EQ(httpStatus, 204);
 
-        std::cerr << responseBuffer << '\n';
+        std::cout << responseBuffer << '\n';
         curl_easy_cleanup(curl);
     }
 
