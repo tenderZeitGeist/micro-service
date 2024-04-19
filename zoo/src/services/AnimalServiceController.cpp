@@ -17,6 +17,15 @@
 
 namespace json = boost::json;
 
+namespace {
+std::optional<zoo::Species> speciesStringToSpecies(const std::string& speciesString)
+        try {
+            return std::make_optional<zoo::Species>(zoo::Animal::stringToSpecies(speciesString));
+        } catch (const std::invalid_argument&) {
+            return std::nullopt;
+        }
+}
+
 namespace zoo {
 
 static const rest::Response kNotFoundResponse {
@@ -171,22 +180,27 @@ rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Reque
         return kBadRequest;
     }
 
-    const auto speciesString = matches[1].str();
-    try {
-        const auto animals = m_animalService->getAllTargetEntities();
-        const auto species = Animal::stringToSpecies(speciesString);
-        auto filteredView = animals
-                | std::ranges::views::filter([species](auto animal) { return animal.get().getSpecies() == species; })
-                | std::views::common;
-        std::string body = json::serialize(json::array().emplace_back(hateos::animals::toJson("",{filteredView.begin(), filteredView.end()})));
-        return {
-            rest::http::status::ok,
-            std::move(body),
-            rest::kJson
-        };
-    } catch (const std::exception&) {
+    const auto species = speciesStringToSpecies(matches[1].str());
+    if(!species) {
         return kBadRequest;
     }
+
+    const auto animals = m_animalService->getAllTargetEntities();
+    auto filteredView = animals
+                        | std::ranges::views::filter([species](auto animal) { return animal.get().getSpecies() == species; })
+                        | std::views::common;
+
+    std::string body;
+    try {
+        body = parse(std::vector<std::reference_wrapper<const Animal>>{filteredView.begin(), filteredView.end()});
+    } catch (const std::logic_error&) {
+        return kInternalError;
+    }
+    return {
+        rest::http::status::ok,
+        std::move(body),
+        rest::kJson
+    };
 }
 
 std::string AnimalServiceController::parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
@@ -194,6 +208,18 @@ std::string AnimalServiceController::parse(const std::vector<std::reference_wrap
     for (auto compoundRef: compounds) {
         const auto animalRefs = m_animalService->getAnimalsByIds(compoundRef.get().getAnimals());
         object["compounds"].as_array().emplace_back(hateos::compounds::toJson(compoundRef, animalRefs));
+    }
+    return json::serialize(json::array().emplace_back(std::move(object)));
+}
+
+std::string AnimalServiceController::parse(const std::vector<std::reference_wrapper<const Animal>>& animals) const {
+    json::object object{{"animals", json::array()}};
+    for(auto animalRef : animals) {
+        const auto compoundId = m_compoundService->findCompoundByAnimalId(animalRef.get().getId());
+        if(!compoundId) {
+            throw std::logic_error("An animal needs to be linked to a compound. Aborting process.");
+        }
+        object["animals"].as_array().emplace_back(hateos::animals::toJson(*compoundId, animalRef));
     }
     return json::serialize(json::array().emplace_back(std::move(object)));
 }

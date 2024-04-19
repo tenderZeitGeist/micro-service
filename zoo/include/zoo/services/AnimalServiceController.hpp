@@ -8,6 +8,7 @@
 
 namespace zoo {
 
+class Animal;
 class Compound;
 class AnimalRepository;
 class CompoundRepository;
@@ -31,6 +32,7 @@ public:
 
 private:
     [[nodiscard]] std::string parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const;
+    [[nodiscard]] std::string parse(const std::vector<std::reference_wrapper<const Animal>>& animals) const;
     [[nodiscard]] std::optional<std::size_t> tryAdd(std::string_view body) const;
     [[nodiscard]] std::optional<DeleteResourceId> tryDelete(std::string_view body) const;
 
