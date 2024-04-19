@@ -9,8 +9,9 @@ set(SERVICES_HEADER_FILES
     "${DIR_INCLUDE}/core/database/DatabaseInterface.hpp"
     "${DIR_INCLUDE}/core/database/Entity.hpp"
 
-    "${DIR_INCLUDE}/core/repository/ServiceControllerInterface.hpp"
     "${DIR_INCLUDE}/core/repository/RepositoryInterface.hpp"
+
+    "${DIR_INCLUDE}/core/service/ServiceControllerInterface.hpp"
 )
 
 set(SERVICES_SOURCE_FILES

@@ -4,7 +4,7 @@
 
 #include <rest/Controller.hpp>
 
-#include <core/repository/ServiceControllerInterface.hpp>
+#include <core/service/ServiceControllerInterface.hpp>
 
 #include <boost/url.hpp>
 
