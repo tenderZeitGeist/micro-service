@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.25)
+
 project(micro-service)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -9,21 +10,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 message(STATUS "Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
-option(USE_SYSTEM_BOOST "Use system boost" Off)
 option(ENABLE_UNIT_TESTS "Enables unit tests" Off)
 
-find_package(Boost QUIET)
-
-if(BOOST_FOUND AND USE_SYSTEM_BOOST)
-    message(STATUS "Using system boost library")
-else()
-    ### Boost 1.84 ###
-    set(BOOST_ROOT "${LIB_DIR}/boost_1_84_0")
-    set(BOOST_INCLUDE_DIR "${BOOST_ROOT}/include")
-    set(BOOST_LIBRARY_DIR "${BOOST_ROOT}/lib")
-    find_package(Boost REQUIRED COMPONENTS url json)
-    message(STATUS "Using system boost library")
-endif()
+find_package(Boost REQUIRED COMPONENTS url json)
 message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
