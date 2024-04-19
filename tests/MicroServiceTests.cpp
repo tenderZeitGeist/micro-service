@@ -197,10 +197,15 @@ protected:
 };
 
 TEST_F(MicroServiceTestSuite, micro_service_api_integration_test) {
-    performGetRequest("http://localhost:8080/compounds");
-    performGetRequest("http://localhost:8080/compounds/Foo");
-    performGetRequest("http://localhost:8080/animals/Foo");
-    performGetRequest("http://localhost:8080/animals/species/Mammal");
+    for (const auto getRequest: {
+             "http://localhost:8080/compounds",
+             "http://localhost:8080/compounds/Foo",
+             "http://localhost:8080/animals/Foo",
+             "http://localhost:8080/animals/species/Mammal"
+         }) {
+        std::cout << "\n\nQuerriyng GET request on URL " << getRequest << '\n';
+        performGetRequest(getRequest);
+    }
 
     const auto animalPayload = boost::json::serialize(
         boost::json::object{
@@ -210,6 +215,11 @@ TEST_F(MicroServiceTestSuite, micro_service_api_integration_test) {
         }
     );
 
-    performPostRequest("http://localhost:8080/compounds/Foo/animals", animalPayload);
+    constexpr auto postRequest = "http://localhost:8080/compounds/Foo/animals";
+    performPostRequest(postRequest, animalPayload);
+    std::cout << "\n\nQuerriyng POST request on URL " << postRequest << '\n';
+
+    constexpr auto deleteRequest = "http://localhost:8080/compounds/Foo/animals/Bar";
+    std::cout << "\n\nQuerriyng DELETE request on URL " << deleteRequest << '\n';
     performDeleteRequest("http://localhost:8080/compounds/Foo/animals/Bar");
 }
