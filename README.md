@@ -1,8 +1,7 @@
 # micro-service++
 
-This project was built primarily a proof of concept, utilizing modern C++ as the main programming language. As an 
-additional exercise, it leverages the features of the C++20 standard. Furthermore, it utilizes Boost Beast to provide 
-the network capabilities for the service.
+This project was built primarily as a proof of concept, utilizing modern C++, specifically the C++20 standard. As an 
+additional exercise, it leverages the features of the aforementioned standard. Furthermore, it utilizes Boost Beast, providing the network capabilities of the service.
 
 ## Prerequisites
 
@@ -14,7 +13,7 @@ Building the project requires the following dependencies:
 ## Dependencies
 
 * gtest
-* boost 
+* boost >= 1.83.0
 
 `gtest` as well as `boost` are being managed and configured via `CMake`. Once the download has finished, the 
 dependencies will be deployed into the build folder, so no extra steps are required. 
@@ -24,24 +23,28 @@ dependencies will be deployed into the build folder, so no extra steps are requi
 To build the project, follow these steps:
 ```bash
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release <path/to/source_folder>
 ```
 
 Alternatively, we can also build the project with the tests enabled
 ```bash
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_UNIT_TESTS=On ..
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_UNIT_TESTS=On <path/to/source_folder>
 ```
 
-Once cmake is done, simply run:
+When the configuration step is finished, simply run:
 ```bash
-make -j<n> # You can adjust the number of threads you to your liking
+make -j<Number of threads> # You can adjust the number to your liking
+```
+
+After the program has been compiled, you can execute the binary from within the build folder via:
+```
 ./micro-service
 ```
 
-The program will automatically start and deploy itself onto port 8080.
+The program deploys itself onto port 8080 and will be ready to receive requests.
 
-## Run test test application
-To verify the integrity of the program, a slim test suite using `gtest` is being provided:
+## Running test application
+To verify the integrity of the program, a slim test suite is being provided:
 ```bash
 ./tests/micro-service-test
 ```
@@ -88,9 +91,9 @@ curl -X DELETE \
 ```
 
 ## TODO
-* Make the program thread safe
+* Thread-safety
 * Implement a logger
 * Refactor the service layer
 * Bump to cpp 23
-* Potentially add an actual database
+* Add an actual database
 * Doxygen documentation
