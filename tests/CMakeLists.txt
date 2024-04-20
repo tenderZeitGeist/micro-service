@@ -29,19 +29,13 @@ add_executable(
     ${MICRO_SERVICE_TEST_FILES}
 )
 
-target_include_directories(
-    ${PROJECT_TEST}
-    PRIVATE
-        ${Boost_ROOT}
-)
-
 target_link_libraries(
     ${PROJECT_TEST}
         core
         rest
         zoo
         curl
-        ${Boost_LIBRARIES}
+        boost
 
         gtest
         gmock

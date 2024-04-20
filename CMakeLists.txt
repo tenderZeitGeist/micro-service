@@ -57,9 +57,11 @@ set(SOURCE_FILES
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-# add_library(boost INTERFACE)
-# target_include_directories(boost INTERFACE ${Boost_ROOT})
-# target_compile_definitions(boost INTERFACE BOOST_BEAST_USE_STD_STRING_VIEW)
+add_library(boost INTERFACE)
+target_include_directories(boost INTERFACE ${Boost_ROOT})
+target_compile_definitions(boost INTERFACE BOOST_BEAST_USE_STD_STRING_VIEW)
+target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
+
 
 target_include_directories(
     ${PROJECT_NAME}
@@ -79,7 +81,7 @@ target_link_libraries(
         rest
         zoo
         core
-        ${Boost_LIBRARIES}
+        boost
 )
 
 if(ENABLE_UNIT_TESTS)

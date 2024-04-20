@@ -49,7 +49,7 @@ target_link_libraries(
     PRIVATE
         core
         rest
-        ${Boost_LIBRARIES}
+        boost
 )
 
 target_include_directories(
@@ -59,7 +59,6 @@ target_include_directories(
     PRIVATE
         ${DIR_SOURCE}
         ${DIR_PRIVATE}
-        ${Boost_ROOT}
 )
 
 set_target_properties(

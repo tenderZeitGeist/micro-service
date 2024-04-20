@@ -34,7 +34,6 @@ target_include_directories(
         ${DIR_INCLUDE}
     PRIVATE
         ${DIR_SOURCE}
-        ${Boost_ROOT}
 )
 
 set_target_properties(
@@ -47,5 +46,5 @@ target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
         core
-        ${Boost_LIBRARIES}
+        boost
 )
