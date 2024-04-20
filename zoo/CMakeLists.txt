@@ -8,29 +8,21 @@ set(DIR_PRIVATE ${CMAKE_CURRENT_LIST_DIR}/private)
 
 set(ZOO_HEADER_FILES
     "${DIR_INCLUDE}/zoo/animal/Animal.hpp"
-
     "${DIR_INCLUDE}/zoo/compound/Compound.hpp"
-
     "${DIR_INCLUDE}/zoo/database/InMemoryDatabase.hpp"
-
     "${DIR_INCLUDE}/zoo/services/AnimalServiceController.hpp"
     "${DIR_INCLUDE}/zoo/services/AnimalRepository.hpp"
     "${DIR_INCLUDE}/zoo/services/CompoundRepository.hpp"
-
     "${DIR_PRIVATE}/zoo/Utils.hpp"
 )
 
 set(ZOO_SOURCE_FILES
     "${DIR_SOURCE}/animal/Animal.cpp"
-
     "${DIR_SOURCE}/compound/Compound.cpp"
-
     "${DIR_SOURCE}/database/InMemoryDatabase.cpp"
-
     "${DIR_SOURCE}/services/AnimalServiceController.cpp"
     "${DIR_SOURCE}/services/AnimalRepository.cpp"
     "${DIR_SOURCE}/services/CompoundRepository.cpp"
-
     "${DIR_PRIVATE}/zoo/Utils.cpp"
 )
 
@@ -57,6 +49,7 @@ target_link_libraries(
     PRIVATE
         core
         rest
+        ${Boost_LIBRARIES}
 )
 
 target_include_directories(
@@ -66,6 +59,7 @@ target_include_directories(
     PRIVATE
         ${DIR_SOURCE}
         ${DIR_PRIVATE}
+        ${Boost_ROOT}
 )
 
 set_target_properties(

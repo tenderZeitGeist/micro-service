@@ -24,27 +24,28 @@ set(REST_SOURCE_FILES
 add_library(
     ${PROJECT_NAME}
     STATIC
-    ${REST_HEADER_FILES}
-    ${REST_SOURCE_FILES}
+        ${REST_HEADER_FILES}
+        ${REST_SOURCE_FILES}
 )
 
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
-    ${DIR_INCLUDE}
+        ${DIR_INCLUDE}
     PRIVATE
-    ${DIR_SOURCE}
+        ${DIR_SOURCE}
+        ${Boost_ROOT}
 )
 
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
-    LINKER_LANGUAGE CXX
+        LINKER_LANGUAGE CXX
 )
 
 target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
-    core
-    ${Boost_LIBRARIES}
+        core
+        ${Boost_LIBRARIES}
 )
