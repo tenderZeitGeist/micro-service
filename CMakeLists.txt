@@ -38,7 +38,6 @@ message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 
 set(Boost_LIBRARIES
-    Boost::beast
     Boost::regex
     Boost::url
     Boost::json
@@ -58,21 +57,23 @@ set(SOURCE_FILES
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 add_library(boost INTERFACE)
-target_include_directories(boost INTERFACE ${Boost_ROOT})
-target_compile_definitions(boost INTERFACE BOOST_BEAST_USE_STD_STRING_VIEW)
-target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 
+target_include_directories(
+    boost
+    INTERFACE
+        ${Boost_ROOT}
+)
+
+target_link_libraries(
+    boost
+    INTERFACE
+        ${Boost_LIBRARIES}
+)
 
 target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
         ${Boost_ROOT}
-)
-
-target_compile_definitions(
-    ${PROJECT_NAME}
-    PRIVATE
-        BOOST_BEAST_USE_STD_STRING_VIEW
 )
 
 target_link_libraries(
