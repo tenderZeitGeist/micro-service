@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.25)
 project(micro-service)
 
 set(CMAKE_CXX_STANDARD 20)
-set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
-
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -Wall -Wextra -Og -Wconversion -Wpedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 message(STATUS "Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
@@ -15,7 +13,6 @@ option(ENABLE_UNIT_TESTS "Enables unit tests" Off)
 set(BOOST_VERSION "1.83.0")
 set(BOOST_URL "https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz")
 set(BOOST_URL_MD5 "58db882403e0c16b334760f3c3b76ff8")
-set(BOOST_LIBS_REQUIRED system beast json)
 
 include(FetchContent)
 
@@ -38,6 +35,7 @@ message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
 
 set(Boost_LIBRARIES
+    Boost::beast
     Boost::regex
     Boost::url
     Boost::json
