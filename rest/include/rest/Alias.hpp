@@ -12,6 +12,9 @@ namespace rest {
     /// forward declaration due to Handler alias
     struct Response;
 
+    /// Threads
+    constexpr std::size_t kMaxThreads = 4;
+
     /// MIME types
     constexpr std::string_view kJson      = "application/json";
     constexpr std::string_view kTextPlain = "text/plain";
@@ -36,4 +39,13 @@ namespace rest {
     using Method = http::verb;
     using Endpoint = boost::regex;
     using Handler = std::function<Response(const HttpRequest&)>;
+
+    namespace routes {
+        static const Endpoint getCompounds("^/compounds$");
+        static const Endpoint getCompoundByName("^/compounds/([a-zA-Z]{1,255})$");
+        static const Endpoint getAnimalByName("^/animals/([a-zA-Z]{1,255})$");
+        static const Endpoint postAnimalByCompound("^/compounds/([a-zA-Z]{1,255})/animals$");
+        static const Endpoint deleteAnimalByCompound("^/compounds/([a-zA-Z]{1,255})/animals/([a-zA-Z]{1,255})$");
+        static const Endpoint getAnimalsBySpecies("^/animals/species/(?i:(mammal|fish|bird|reptile))$");
+    }
 }

@@ -1,0 +1,6 @@
+TropicalAviary 20
+Parrot 2 Bird
+Toucan 1 Bird
+Flamingo 1 Bird
+Hummingbird 1 Bird
+Macaw 2 Bird

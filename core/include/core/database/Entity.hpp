@@ -4,7 +4,11 @@
 
 #pragma once
 
-#include <atomic>
+#include <cstddef>
+
+#include "DatabaseInterface.hpp"
+
+namespace core::database {
 
 class Entity {
 public:
@@ -13,6 +17,8 @@ public:
 protected:
     std::size_t m_id{};
 private:
-    friend class InMemoryDatabase;
+    friend class core::database::DatabaseInterface;
     void setId(std::size_t id);
 };
+
+}

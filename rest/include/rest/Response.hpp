@@ -12,7 +12,7 @@ namespace rest {
 struct Response {
     http::status status{http::status::not_implemented};
     std::string body;
-    std::string mimeType{rest::kJson};
+    std::string_view mimeType{rest::kJson};
 };
 
 }

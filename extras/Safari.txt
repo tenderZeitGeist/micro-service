@@ -1,0 +1,6 @@
+SafariCompound 250
+Lion 2 Mammal
+Elephant 3 Mammal
+Giraffe 2 Mammal
+Zebra 2 Mammal
+Rhino 4 Mammal

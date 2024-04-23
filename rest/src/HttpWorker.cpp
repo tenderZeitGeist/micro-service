@@ -7,21 +7,21 @@
 
 #include <iostream>
 
-namespace rest{
+namespace rest {
 
-    rest::HttpWorker::HttpWorker(std::reference_wrapper<Tcp::acceptor> acceptor,
-                                 std::reference_wrapper<Controller> controller)
+    HttpWorker::HttpWorker(std::reference_wrapper<Tcp::acceptor> acceptor,
+                                 std::reference_wrapper<const Controller> controller)
         : m_acceptor(acceptor)
         , m_controller(controller){
 
     }
 
-    void rest::HttpWorker::start() {
+    void HttpWorker::start() {
         accept();
         checkTimeout();
     }
 
-    void rest::HttpWorker::accept() {
+    void HttpWorker::accept() {
         beast::error_code error;
         [[maybe_unused]]const auto _ = m_socket.close(error);
         m_buffer.consume(m_buffer.size());
@@ -36,7 +36,7 @@ namespace rest{
             });
     }
 
-    void rest::HttpWorker::readRequest() {
+    void HttpWorker::readRequest() {
         m_parser = std::make_unique<HttpParser>();
         http::async_read(
             m_socket,
@@ -51,12 +51,12 @@ namespace rest{
             });
     }
 
-    void rest::HttpWorker::processRequest(const HttpRequest& request) {
-        rest::Response response = m_controller.get().execute(request);
-        prepareResponse(response.status, response.body, response.mimeType);
+    void HttpWorker::processRequest(const HttpRequest& request) {
+        auto [status, body, mimeType] = m_controller.get().execute(request);
+        prepareResponse(status, std::move(body), mimeType);
     }
 
-    void rest::HttpWorker::send() {
+    void HttpWorker::send() {
         m_serializer = std::make_unique<HttpSerializer>(*m_response);
         http::async_write(
             m_socket,
@@ -67,10 +67,10 @@ namespace rest{
             });
     }
 
-    void rest::HttpWorker::prepareResponse(http::status status, const std::string& body, std::string_view mimeType) {
+    void HttpWorker::prepareResponse(http::status status, std::string body, std::string_view mimeType) {
         m_response = std::make_unique<HttpResponse>();
         m_response->result(status);
-        m_response->body() = body;
+        m_response->body() = std::move(body);
         m_response->set(http::field::content_type, mimeType);
         m_response->set(http::field::server, kServerInfo);
         m_response->set(http::field::access_control_allow_origin, "");
@@ -78,7 +78,7 @@ namespace rest{
         send();
     }
 
-    void rest::HttpWorker::checkTimeout() {
+    void HttpWorker::checkTimeout() {
         if(m_requestTimeout.expiry() <= clock::now()) {
             m_socket.close();
             m_requestTimeout.expires_at(clock::time_point::max());

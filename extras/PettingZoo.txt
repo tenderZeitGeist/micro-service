@@ -1,0 +1,6 @@
+PettingZoo 30
+Cat 2 Mammal
+Dog 3 Mammal
+Rabbit 1 Mammal
+Sheep 3 Mammal
+Goat 4 Mammal
