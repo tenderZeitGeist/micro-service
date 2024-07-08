@@ -40,30 +40,21 @@ public:
             }
         );
 
-        if (iter != entities.end()) {
-            return std::make_optional(std::ref(static_cast<T&>(**iter)));
+        if (iter == entities.end()) {
+            return std::nullopt;
         }
 
-        return std::nullopt;
+        return std::make_optional(std::ref(static_cast<T&>(**iter)));
     }
 
     [[nodiscard]] std::optional<std::reference_wrapper<const T>> getEntityById(std::size_t id) const {
-        const auto entities = m_database->getAllEntities();
-        const auto iter = std::ranges::find_if(
-            entities,
-            [id](const auto& entity) {
-                if (const auto* targetType = dynamic_cast<const T*>(entity.get())) {
-                    return targetType->getId() == id;
-                }
-                return false;
-            }
-        );
+        const auto entity = m_database->getEntityById(id);
 
-        if (iter != entities.end()) {
-            return std::make_optional(std::ref(static_cast<T&>(**iter)));
+        if (!entity) {
+            return std::nullopt;
         }
 
-        return std::nullopt;
+        return std::make_optional(std::cref(static_cast<T&>(*entity)));
     }
 
 protected:
