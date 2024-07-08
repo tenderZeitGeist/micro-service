@@ -18,17 +18,19 @@ class RepositoryInterface {
 public:
     virtual ~RepositoryInterface() = default;
 
-    [[nodiscard]] std::vector<std::reference_wrapper<const T>> getAllTargetEntities() const {
+    [[nodiscard]]
+    std::vector<T> getAllTargetEntities() const {
         const auto entities = m_database->getAllEntities();
         auto filteredView = entities
         | std::ranges::views::filter([](const auto& entity) { return dynamic_cast<const T*>(entity.get()) != nullptr; })
-        | std::views::transform([](const auto& entity){ return std::cref(*static_cast<const T*>(entity.get())); })
+        | std::views::transform([](const auto& entity){ return T(static_cast<T&>(*entity)); })
         | std::views::common;
 
         return {filteredView.begin(), filteredView.end()};
     }
 
-    [[nodiscard]] std::optional<std::reference_wrapper<const T>> getEntityByName(const std::string& name) const {
+    [[nodiscard]]
+    std::optional<T> getEntityByName(const std::string& name) const {
         const auto entities = m_database->getAllEntities();
         const auto iter = std::ranges::find_if(
             entities,
@@ -44,17 +46,30 @@ public:
             return std::nullopt;
         }
 
-        return std::make_optional(std::ref(static_cast<T&>(**iter)));
+        const auto derived = dynamic_cast<const T*>(iter->get());
+
+        if (!derived) {
+            return std::nullopt;
+        }
+
+        return std::make_optional<T>(*derived);
     }
 
-    [[nodiscard]] std::optional<std::reference_wrapper<const T>> getEntityById(std::size_t id) const {
+    [[nodiscard]]
+    std::optional<T> getEntityById(std::size_t id) const {
         const auto entity = m_database->getEntityById(id);
 
         if (!entity) {
             return std::nullopt;
         }
 
-        return std::make_optional(std::cref(static_cast<T&>(*entity)));
+        const auto derived = dynamic_cast<const T*>(entity.get());
+
+        if (!derived) {
+            return std::nullopt;
+        }
+
+        return std::make_optional<T>(*derived);
     }
 
 protected:

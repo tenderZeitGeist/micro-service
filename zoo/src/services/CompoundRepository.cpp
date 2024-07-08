@@ -41,13 +41,15 @@ bool CompoundRepository::deleteAnimal(std::reference_wrapper<const Compound> com
 
 std::optional<std::string> CompoundRepository::findCompoundByAnimalId(std::size_t animalId) const {
     const auto compounds = getAllTargetEntities();
-    const auto iter = std::ranges::find_if(compounds, [animalId](auto compoundRef) {
-        return compoundRef.get().hasAnimal(animalId);
-    });
-    if(iter != compounds.end()) {
-        return std::make_optional<std::string>(iter->get().getName());
+    const auto iter = std::ranges::find_if(
+        compounds,
+        [animalId](auto compoundRef) { return compoundRef.hasAnimal(animalId);}
+        );
+
+    if (iter == compounds.end()) {
+        return std::nullopt;
     }
-    return std::nullopt;
+    return std::make_optional<std::string>(iter->getName());
 }
 
 }
