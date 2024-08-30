@@ -10,36 +10,7 @@ message(STATUS "Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 option(ENABLE_UNIT_TESTS "Enables unit tests" Off)
 
-set(BOOST_VERSION "1.83.0")
-set(BOOST_URL "https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz")
-set(BOOST_URL_MD5 "58db882403e0c16b334760f3c3b76ff8")
-
-include(FetchContent)
-
-set(FETCHCONTENT_QUIET FALSE)
-FetchContent_Declare(
-    Boost
-    URL ${BOOST_URL}
-    URL_HASH MD5=${BOOST_URL_MD5}
-)
-
-FetchContent_MakeAvailable(Boost)
-
-set(Boost_ROOT ${boost_SOURCE_DIR})
-message(STATUS "Boost Source Directory: ${boost_SOURCE_DIR}")
-message(STATUS "Boost Root: ${Boost_ROOT}")
-
-# find_package(Boost REQUIRED COMPONENTS url json)
-message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
-message(STATUS "Boost libs: ${Boost_LIBRARIES}")
-
-set(Boost_LIBRARIES
-    Boost::beast
-    Boost::regex
-    Boost::url
-    Boost::json
-)
+include(Boost.cmake)
 
 add_subdirectory(core)
 add_subdirectory(rest)
