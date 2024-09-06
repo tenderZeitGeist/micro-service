@@ -9,10 +9,10 @@
 
 namespace core::logger {
 
-class LoggerImpl {
+class Queue {
 public:
-    explicit LoggerImpl();
-    ~LoggerImpl();
+    explicit Queue();
+    ~Queue();
 
     void start();
     void stop();

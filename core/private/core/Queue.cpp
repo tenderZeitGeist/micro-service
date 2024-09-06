@@ -1,4 +1,4 @@
-#include "LoggerImpl.hpp"
+#include "Queue.hpp"
 
 #include <iostream>
 
@@ -9,19 +9,19 @@ namespace {
 }
 
 namespace core::logger {
-    LoggerImpl::LoggerImpl() {
+    Queue::Queue() {
     }
 
-    LoggerImpl::~LoggerImpl() {
+    Queue::~Queue() {
         stop();
     }
 
-    void LoggerImpl::start() {
-        m_thread = std::thread([this]{ process(); });
+    void Queue::start() {
         m_running = true;
+        m_thread = std::thread([this]{ process(); });
     }
 
-    void LoggerImpl::stop() {
+    void Queue::stop() {
         {
             std::scoped_lock lk(m_mutex);
             m_running = false;
@@ -32,22 +32,23 @@ namespace core::logger {
         }
     }
 
-    bool LoggerImpl::running() const {
+    bool Queue::running() const {
         return m_running;
     }
 
-    bool LoggerImpl::isEmpty() const {
+    bool Queue::isEmpty() const {
         return m_queue.empty();
     }
 
-    void LoggerImpl::queue(std::string &&message) { {
+    void Queue::queue(std::string&& message) {
+        {
             std::scoped_lock lk(m_mutex);
             m_queue.push(std::move(message));
         }
         m_cv.notify_one();
     }
 
-    void LoggerImpl::process() {
+    void Queue::process() {
         std::unique_lock lk(m_mutex);
         while (m_running) {
 
