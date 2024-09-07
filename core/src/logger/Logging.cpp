@@ -1,5 +1,5 @@
 
-#include "core/logger/Logger.hpp"
+#include "core/logger/Logging.hpp"
 
 namespace core::logger {
     void log(const std::string& message) {
