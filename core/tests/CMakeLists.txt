@@ -13,6 +13,7 @@ target_link_libraries(
         ${PROJECT_NAME}
         core
         gtest
+        gmock
         gtest_main
 )
 

@@ -3,22 +3,24 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
-#include <queue>
 
 namespace core::logger {
 
+class LoggerInterface;
+
 class MessageQueue {
 public:
-    explicit MessageQueue();
+    explicit MessageQueue(std::unique_ptr<LoggerInterface> logger);
     ~MessageQueue();
 
     void start();
     void stop();
     [[nodiscard]] bool running() const;
     [[nodiscard]] bool isEmpty() const;
-    void queue(std::string&& message);
+    void queue(std::string message);
 
 private:
     void process();
@@ -28,6 +30,8 @@ private:
     std::queue<std::string> m_queue;
     std::mutex m_mutex;
     std::thread m_thread;
+
+    std::unique_ptr<LoggerInterface> m_logger;
 };
 
 }

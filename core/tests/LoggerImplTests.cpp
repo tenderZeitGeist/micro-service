@@ -1,60 +1,77 @@
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include <core/Queue.hpp>
 #include <core/LoggerInterface.hpp>
+#include <core/MessageQueue.hpp>
 
 
 namespace {
-    class LoggerMock
-        : public LoggerInterface {
-        public:
-            explicit LoggerMock(std::condition_variable& cv)
-                : m_cv(cv) {
-                ON_CALL(*this, log(::testing::_)).WillByDefault([this](const std::string& message){ m_cv.notify_all(); });
-            }
-        MOCK_METHOD(void, log, (const std::string&), (const, override));
-        private:
-            std::condition_variable& m_cv;
-    };
+
+class LoggerMock : public core::logger::LoggerInterface {
+public:
+    MOCK_METHOD(void, log, (const std::string&), (const, override));
+};
 }
 
-class LoggerImplTestFixture
-    : public testing::Test {
+class LoggerImplTestFixture : public testing::Test {
 protected:
-    explicit LoggerImplTestFixture()
-        : m_loggerMock(m_cv){
-
+    explicit LoggerImplTestFixture() {
+        auto logger = std::make_unique<LoggerMock>();
+        m_loggerMock = logger.get();
+        m_loggerQueue = std::make_unique<core::logger::MessageQueue>(std::move(logger));
     }
 
-    core::logger::Queue m_loggerQueue;
+    std::unique_ptr<core::logger::MessageQueue> m_loggerQueue;
     std::condition_variable m_cv;
-    LoggerMock m_loggerMock;
+    std::mutex m_mutex;
+    LoggerMock* m_loggerMock;
 };
 
 TEST_F(LoggerImplTestFixture, initial_state) {
-    EXPECT_FALSE(m_loggerQueue.running());
+    EXPECT_FALSE(m_loggerQueue->running());
 }
 
 TEST_F(LoggerImplTestFixture, start_queue) {
-    m_loggerQueue.start();
-    EXPECT_TRUE(m_loggerQueue.running());
+    m_loggerQueue->start();
+    EXPECT_TRUE(m_loggerQueue->running());
 }
 
 TEST_F(LoggerImplTestFixture, stop_queue) {
-    m_loggerQueue.start();
-    ASSERT_TRUE(m_loggerQueue.running());
-    m_loggerQueue.stop();
-    EXPECT_FALSE(m_loggerQueue.running());
+    m_loggerQueue->start();
+    ASSERT_TRUE(m_loggerQueue->running());
+    m_loggerQueue->stop();
+    EXPECT_FALSE(m_loggerQueue->running());
 }
 
 TEST_F(LoggerImplTestFixture, queue_message) {
-    m_loggerQueue.queue("foo");
-    EXPECT_FALSE(m_loggerQueue.isEmpty());
-    m_loggerQueue.start();
-    m_loggerQueue.queue("bar");
+    m_loggerQueue->start();
+    const std::string message = "bar";
+    EXPECT_CALL(*m_loggerMock, log(message)).WillOnce([this](const std::string&) { m_cv.notify_all(); });
+    {
+        using namespace std::chrono_literals;
+        std::unique_lock lk{m_mutex};
+        m_loggerQueue->queue("bar");
+        m_cv.wait_for(lk, 10ms);
+    }
+    EXPECT_TRUE(m_loggerQueue->isEmpty());
+}
 
+TEST_F(LoggerImplTestFixture, queue_messages) {
+    m_loggerQueue->start();
+    const std::string message = "bar";
+    constexpr std::size_t numOfCalls = 10;
+    EXPECT_CALL(*m_loggerMock, log(::testing::_)).Times(numOfCalls);
+    for (std::size_t i = 0; i < numOfCalls; ++i) {
+        m_loggerQueue->queue(std::to_string(i));
+    }
 
-    EXPECT_TRUE(m_loggerQueue.isEmpty());
+    EXPECT_CALL(*m_loggerMock, log(message)).WillOnce([this](const std::string&) { m_cv.notify_all(); });
+    {
+        using namespace std::chrono_literals;
+        std::unique_lock lk{m_mutex};
+        m_loggerQueue->queue(message);
+        m_cv.wait_for(lk, 10ms);
+    }
+    EXPECT_TRUE(m_loggerQueue->isEmpty());
 }

@@ -9,17 +9,19 @@ set(DIR_PRIVATE ${CMAKE_CURRENT_LIST_DIR}/private)
 set(CORE_HEADER_FILES
     "${DIR_INCLUDE}/core/database/DatabaseInterface.hpp"
     "${DIR_INCLUDE}/core/database/Entity.hpp"
-    "${DIR_INCLUDE}/core/logger/Logger.hpp"
+    "${DIR_INCLUDE}/core/logger/Logging.hpp"
     "${DIR_INCLUDE}/core/repository/RepositoryInterface.hpp"
     "${DIR_INCLUDE}/core/service/ServiceControllerInterface.hpp"
     "${DIR_PRIVATE}/core/LoggerImpl.hpp"
+    "${DIR_PRIVATE}/core/LoggerInterface.hpp"
+    "${DIR_PRIVATE}/core/MessageQueue.hpp"
 )
 
 set(CORE_SOURCE_FILES
     "${DIR_SOURCE}/database/DatabaseInterface.cpp"
     "${DIR_SOURCE}/database/Entity.cpp"
-    "${DIR_SOURCE}/logger/Logger.cpp"
     "${DIR_PRIVATE}/core/LoggerImpl.cpp"
+    "${DIR_PRIVATE}/core/MessageQueue.cpp"
 )
 
 add_library(
