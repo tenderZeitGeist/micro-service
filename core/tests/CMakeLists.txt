@@ -1,7 +1,7 @@
 project(core-tests)
 
 set(CORE_TEST_FILES
-    "${CMAKE_CURRENT_LIST_DIR}/LoggerImplTests.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/MessageQueueTests.cpp"
 )
 
 add_executable(

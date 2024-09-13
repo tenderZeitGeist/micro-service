@@ -13,7 +13,11 @@ MessageQueue::~MessageQueue() {
 
 void MessageQueue::start() {
     m_running = true;
-    m_thread = std::thread([this] { process(); });
+    m_thread = std::thread([this] {
+        while (m_running) {
+            process();
+        }
+    });
 }
 
 void MessageQueue::stop() {
@@ -45,23 +49,18 @@ void MessageQueue::queue(std::string message) {
 
 void MessageQueue::process() {
     std::unique_lock lk(m_mutex);
-    while (m_running) {
-        m_cv.wait(lk, [this]() { return !m_queue.empty() || !m_running; });
-        if(lk.owns_lock()) {
-            lk.unlock();
-        }
+    m_cv.wait(lk, [this]() { return !m_queue.empty() || !m_running; });
 
-        if (!m_running) {
-            return;
-        }
+    if (!m_running) {
+        return;
+    }
 
-        while (!m_queue.empty()) {
-            lk.lock();
-            const auto message = m_queue.front();
-            m_queue.pop();
-            lk.unlock();
-            m_logger->log(message);
-        }
+    while (!m_queue.empty()) {
+        const auto message = m_queue.front();
+        m_queue.pop();
+        lk.unlock();
+        m_logger->log(message);
+        lk.lock();
     }
 }
 }

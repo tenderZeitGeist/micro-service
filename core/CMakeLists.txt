@@ -20,6 +20,7 @@ set(CORE_HEADER_FILES
 set(CORE_SOURCE_FILES
     "${DIR_SOURCE}/database/DatabaseInterface.cpp"
     "${DIR_SOURCE}/database/Entity.cpp"
+    "${DIR_SOURCE}/logger/Logging.cpp"
     "${DIR_PRIVATE}/core/LoggerImpl.cpp"
     "${DIR_PRIVATE}/core/MessageQueue.cpp"
 )
