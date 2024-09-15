@@ -5,8 +5,6 @@
 #include "rest/Alias.hpp"
 #include "rest/HttpWorker.hpp"
 
-#include <iostream>
-
 namespace rest {
 
     HttpWorker::HttpWorker(std::reference_wrapper<Tcp::acceptor> acceptor,
@@ -18,12 +16,13 @@ namespace rest {
 
     void HttpWorker::start() {
         accept();
-        checkTimeout();
     }
 
     void HttpWorker::accept() {
-        beast::error_code error;
-        [[maybe_unused]]const auto _ = m_socket.close(error);
+        if (m_socket.is_open()) {
+            beast::error_code error;
+            [[maybe_unused]]const auto _ = m_socket.close(error);
+        }
         m_buffer.consume(m_buffer.size());
         m_acceptor.get().async_accept(
             m_socket,
@@ -37,6 +36,7 @@ namespace rest {
     }
 
     void HttpWorker::readRequest() {
+        scheduleTimeout();
         m_parser = std::make_unique<HttpParser>();
         http::async_read(
             m_socket,
@@ -62,6 +62,7 @@ namespace rest {
             m_socket,
             *m_serializer,
             [this](beast::error_code ec, std::size_t) {
+                m_requestTimeout.cancel();
                 [[maybe_unused]]const auto _ = m_socket.shutdown(Tcp::socket::shutdown_send, ec);
                 accept();
             });
@@ -79,10 +80,15 @@ namespace rest {
     }
 
     void HttpWorker::checkTimeout() {
-        if(m_requestTimeout.expiry() <= clock::now()) {
-            m_socket.close();
-            m_requestTimeout.expires_at(clock::time_point::max());
+        if (m_requestTimeout.expiry() <= clock::now()) {
+            accept();
         }
-        m_requestTimeout.async_wait([this](beast::error_code) { checkTimeout();});
+        m_requestTimeout.async_wait([this](beast::error_code) { checkTimeout(); });
     }
-}
+
+    void HttpWorker::scheduleTimeout() {
+        m_requestTimeout.expires_after(kTimeout);
+        checkTimeout();
+    }
+
+    }

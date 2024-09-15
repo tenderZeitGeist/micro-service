@@ -30,6 +30,7 @@ namespace rest {
         void send();
         void prepareResponse(http::status status, std::string body, std::string_view mimeType);
         void checkTimeout();
+        void scheduleTimeout();
 
         std::reference_wrapper<Tcp::acceptor> m_acceptor;
         std::reference_wrapper<const Controller> m_controller;
