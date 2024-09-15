@@ -1,0 +1,5 @@
+if (ENABLE_LOGGING)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_LOGGING=1)
+else()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_LOGGING=0)
+endif ()
