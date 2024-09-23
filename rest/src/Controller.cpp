@@ -5,6 +5,7 @@
 #include <rest/Controller.hpp>
 
 #include <core/service/ServiceControllerInterface.hpp>
+#include <core/logger/Logging.hpp>
 
 #include <boost/url.hpp>
 
@@ -40,6 +41,7 @@ bool Controller::emplaceRoute(Route route) {
 
     url::result<url::url_view> target = url::parse_origin_form(request.target());
     if (target.has_error()) {
+        core::logger::log("Unable to parse origin form of target " + std::string(request.target()));
         return {
             http::status::bad_request,
             "Invalid target",
@@ -54,14 +56,15 @@ bool Controller::emplaceRoute(Route route) {
         }
     );
 
-    if (result != m_routes.end()) {
-        return result->callback(request);
+    if (result == m_routes.end()) {
+        core::logger::log("Unable to locate resource for target " + target->path());
+        return {
+            http::status::not_found,
+            target->path() + " not found",
+            kTextPlain
+        };
     }
 
-    return {
-        http::status::not_found,
-        target->path() + " not found",
-        kTextPlain.data()
-    };
+    return result->callback(request);
 }
 }
