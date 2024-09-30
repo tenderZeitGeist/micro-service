@@ -39,7 +39,7 @@ bool Controller::emplaceRoute(Route route) {
 [[nodiscard]] Response Controller::execute(const HttpRequest& request) const {
     namespace url = boost::urls;
 
-    url::result<url::url_view> target = url::parse_origin_form(request.target());
+    boost::system::result<url::url_view> target = url::parse_origin_form(request.target());
     if (target.has_error()) {
         core::logger::log("Unable to parse origin form of target " + std::string(request.target()));
         return {
