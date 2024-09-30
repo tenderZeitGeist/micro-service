@@ -12,6 +12,9 @@ int main() {
         core::logger::start();
         core::logger::log("Start logging...");
     }
+    if constexpr (ENABLE_PERFORMANCE_LOGGING) {
+        core::logger::log("Enabled performance logging.");
+    }
     const auto database = std::make_shared<zoo::database::InMemoryDatabase>();
     auto serviceController = std::make_unique<zoo::AnimalServiceController>(
         std::make_unique<zoo::AnimalRepository>(database),

@@ -10,9 +10,10 @@ message(STATUS "Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 option(ENABLE_UNIT_TESTS "Enables unit tests" Off)
 option(ENABLE_LOGGER "Enables logging" Off)
-option(ENABLE_PERFORMANCE_TIMING "Enables logging" Off)
+option(ENABLE_PERFORMANCE_TIMING "Enables performance timing" Off)
 
 include(Boost.cmake)
+include(Feature.cmake)
 
 add_subdirectory(core)
 add_subdirectory(rest)
@@ -26,8 +27,6 @@ set(SOURCE_FILES
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-
-include(Feature.cmake)
 
 add_library(boost INTERFACE)
 

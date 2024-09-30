@@ -6,6 +6,7 @@
 
 #include <core/service/ServiceControllerInterface.hpp>
 #include <core/logger/Logging.hpp>
+#include <core/Utility.hpp>
 
 #include <boost/url.hpp>
 
@@ -65,6 +66,7 @@ bool Controller::emplaceRoute(Route route) {
         };
     }
 
-    return result->callback(request);
+    return MEASURE_PERFORMANCE("foo", result->callback(request));
 }
+
 }

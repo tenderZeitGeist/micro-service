@@ -12,6 +12,7 @@ set(CORE_HEADER_FILES
     "${DIR_INCLUDE}/core/logger/Logging.hpp"
     "${DIR_INCLUDE}/core/repository/RepositoryInterface.hpp"
     "${DIR_INCLUDE}/core/service/ServiceControllerInterface.hpp"
+    "${DIR_INCLUDE}/core/Utility.hpp"
     "${DIR_PRIVATE}/core/LoggerImpl.hpp"
     "${DIR_PRIVATE}/core/LoggerInterface.hpp"
     "${DIR_PRIVATE}/core/MessageQueue.hpp"
