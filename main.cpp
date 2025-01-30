@@ -1,15 +1,20 @@
-#include <iostream>
-
+#include <core/logger/Logging.hpp>
 #include <rest/Alias.hpp>
-#include <rest/Controller.hpp>
 #include <rest/Connection.hpp>
-
-#include <zoo/services/AnimalRepository.hpp>
-#include <zoo/services/CompoundRepository.hpp>
-#include <zoo/services/AnimalServiceController.hpp>
+#include <rest/Controller.hpp>
 #include <zoo/database/InMemoryDatabase.hpp>
+#include <zoo/services/AnimalRepository.hpp>
+#include <zoo/services/AnimalServiceController.hpp>
+#include <zoo/services/CompoundRepository.hpp>
 
 int main() {
+    if constexpr (ENABLE_LOGGING) {
+        core::logger::start();
+        core::logger::log("Start logging...");
+    }
+    if constexpr (ENABLE_PERFORMANCE_LOGGING) {
+        core::logger::log("Enabled performance logging.");
+    }
     const auto database = std::make_shared<zoo::database::InMemoryDatabase>();
     auto serviceController = std::make_unique<zoo::AnimalServiceController>(
         std::make_unique<zoo::AnimalRepository>(database),

@@ -3,43 +3,17 @@ cmake_minimum_required(VERSION 3.25)
 project(micro-service)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -Wall -Wextra -Og -Wconversion -Wpedantic")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -Wall -Wextra -O0 -Wconversion -Wpedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 message(STATUS "Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 option(ENABLE_UNIT_TESTS "Enables unit tests" Off)
+option(ENABLE_LOGGER "Enables logging" Off)
+option(ENABLE_PERFORMANCE_TIMING "Enables performance timing" Off)
 
-set(BOOST_VERSION "1.83.0")
-set(BOOST_URL "https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz")
-set(BOOST_URL_MD5 "58db882403e0c16b334760f3c3b76ff8")
-
-include(FetchContent)
-
-set(FETCHCONTENT_QUIET FALSE)
-FetchContent_Declare(
-    Boost
-    URL ${BOOST_URL}
-    URL_HASH MD5=${BOOST_URL_MD5}
-)
-
-FetchContent_MakeAvailable(Boost)
-
-set(Boost_ROOT ${boost_SOURCE_DIR})
-message(STATUS "Boost Source Directory: ${boost_SOURCE_DIR}")
-message(STATUS "Boost Root: ${Boost_ROOT}")
-
-# find_package(Boost REQUIRED COMPONENTS url json)
-message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIR}")
-message(STATUS "Boost libs: ${Boost_LIBRARIES}")
-
-set(Boost_LIBRARIES
-    Boost::beast
-    Boost::regex
-    Boost::url
-    Boost::json
-)
+include(Boost.cmake)
+include(Feature.cmake)
 
 add_subdirectory(core)
 add_subdirectory(rest)

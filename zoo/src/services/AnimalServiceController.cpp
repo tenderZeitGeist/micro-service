@@ -26,11 +26,24 @@ std::optional<std::string> extractResourceId(std::string_view target, const rest
 }
 
 std::optional<zoo::Species> speciesStringToSpecies(const std::string& speciesString)
-try {
-    return std::make_optional<zoo::Species>(zoo::Animal::stringToSpecies(speciesString));
-} catch (const std::invalid_argument&) {
-    return std::nullopt;
+{
+    try {
+        return std::make_optional<zoo::Species>(zoo::Animal::stringToSpecies(speciesString));
+    } catch (const std::invalid_argument&) {
+        return std::nullopt;
+    }
 }
+
+template<typename T, typename Begin, typename End>
+std::vector<std::reference_wrapper<const T>> toReferenceList(Begin begin, End end)
+{
+    std::vector<std::reference_wrapper<const T>> result;
+    for (auto it = begin; it != end; ++it) {
+        result.emplace_back(std::cref(*it));
+    }
+    return result;
+}
+
 }
 
 namespace zoo {
@@ -100,7 +113,7 @@ rest::Response AnimalServiceController::getAnimalByName(const rest::Request& r) 
         return kNotFoundResponse;
     }
 
-    const auto animal = matchedAnimal.value().get();
+    const auto& animal = *matchedAnimal;
     const auto matchedCompound = m_compoundService->findCompoundByAnimalId(animal.getId());
     if (!matchedCompound) {
         return kInternalError;
@@ -125,7 +138,7 @@ rest::Response AnimalServiceController::addAnimalToCompound(const rest::Request&
         return kNotFoundResponse;
     }
 
-    const auto& compound = matchedCompound.value().get();
+    const auto& compound = *matchedCompound;
     const auto createdAnimal = tryAdd(r.body());
     if (!createdAnimal) {
         return kBadRequest;
@@ -167,14 +180,12 @@ rest::Response AnimalServiceController::deleteAnimalFromCompound(const rest::Req
         return kBadRequest;
     }
 
-    const auto animalIds = matchedCompound.value().get().getAnimals();
-    const auto searchedId = matchedAnimal.value().get().getId();
+    const auto animalIds = matchedCompound.value().getAnimals();
+    const auto searchedId = matchedAnimal.value().getId();
 
     if (!std::ranges::any_of(
         animalIds,
-        [searchedId](std::size_t id) {
-            return id == searchedId;
-        }
+        [searchedId](std::size_t id) { return id == searchedId; }
     )) {
         return kBadRequest;
     }
@@ -202,18 +213,12 @@ rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Reque
         return kBadRequest;
     }
 
-    const auto animals = m_animalService->getAllTargetEntities();
-    auto filteredView = animals
-                        | std::ranges::views::filter(
-                            [species](auto animal) {
-                                return animal.get().getSpecies() == species;
-                            }
-                        )
-                        | std::views::common;
+    auto animals = m_animalService->getAllTargetEntities();
+    const auto tail = std::ranges::partition(animals, [&species](const Animal& animal) {return animal.getSpecies() == species; });
 
     std::string body;
     try {
-        body = parse(std::vector<std::reference_wrapper<const Animal>>{filteredView.begin(), filteredView.end()});
+        body = parse(std::vector<Animal>{std::make_move_iterator(animals.begin()), std::make_move_iterator(tail.begin())});
     } catch (const std::logic_error&) {
         return kInternalError;
     }
@@ -224,23 +229,25 @@ rest::Response AnimalServiceController::getAllAnimalsBySpecies(const rest::Reque
     };
 }
 
-std::string AnimalServiceController::parse(const std::vector<std::reference_wrapper<const Compound>>& compounds) const {
+std::string AnimalServiceController::parse(const std::vector<Compound>& compounds) const {
     json::object object{{"compounds", json::array()}};
-    for (auto compoundRef: compounds) {
-        const auto animalRefs = m_animalService->getAnimalsByIds(compoundRef.get().getAnimals());
-        object["compounds"].as_array().emplace_back(hateos::compounds::toJson(compoundRef, animalRefs));
+    for (const auto& compound: compounds) {
+        const auto animals = m_animalService->getAnimalsByIds(compound.getAnimals());
+        // TODO: Find a better way to handle the data here.
+        const auto animalsRef = toReferenceList<Animal>(animals.begin(), animals.end());
+        object["compounds"].as_array().emplace_back(hateos::compounds::toJson(std::cref(compound), animalsRef));
     }
     return json::serialize(json::array().emplace_back(std::move(object)));
 }
 
-std::string AnimalServiceController::parse(const std::vector<std::reference_wrapper<const Animal>>& animals) const {
+std::string AnimalServiceController::parse(const std::vector<Animal>& animals) const {
     json::object object{{"animals", json::array()}};
-    for (auto animalRef: animals) {
-        const auto compoundId = m_compoundService->findCompoundByAnimalId(animalRef.get().getId());
+    for (const auto& animal: animals) {
+        const auto compoundId = m_compoundService->findCompoundByAnimalId(animal.getId());
         if (!compoundId) {
             throw std::logic_error("An animal needs to be linked to a compound. Aborting process.");
         }
-        object["animals"].as_array().emplace_back(hateos::animals::toJson(*compoundId, animalRef));
+        object["animals"].as_array().emplace_back(hateos::animals::toJson(*compoundId, animal));
     }
     return json::serialize(json::array().emplace_back(std::move(object)));
 }

@@ -1,0 +1,11 @@
+if (ENABLE_LOGGING)
+    add_compile_definitions(ENABLE_LOGGING=1)
+else ()
+    add_compile_definitions(ENABLE_LOGGING=0)
+endif()
+
+if (ENABLE_PERFORMANCE_TIMING)
+    add_compile_definitions(ENABLE_PERFORMANCE_LOGGING=1)
+else ()
+    add_compile_definitions(ENABLE_PERFORMANCE_LOGGING=0)
+endif()

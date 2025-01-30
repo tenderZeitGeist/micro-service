@@ -7,7 +7,6 @@
 #include <zoo/animal/Animal.hpp>
 #include <zoo/compound/Compound.hpp>
 
-#include <atomic>
 #include <memory>
 #include <ranges>
 #include <fstream>
@@ -25,6 +24,7 @@ InMemoryDatabase::InMemoryDatabase() {
 }
 
 std::shared_ptr<Entity> InMemoryDatabase::getEntityById(std::size_t id) {
+    std::scoped_lock lk{_mutex};
     if (const auto iter = m_entities.find(id); iter != m_entities.end()) {
         return iter->second;
     }
@@ -32,11 +32,13 @@ std::shared_ptr<Entity> InMemoryDatabase::getEntityById(std::size_t id) {
 }
 
 std::vector<std::shared_ptr<Entity>> InMemoryDatabase::getAllEntities() {
+    std::scoped_lock lk{_mutex};
     auto view = m_entities | std::views::values | std::views::common;
     return {view.begin(), view.end()};
 }
 
 bool InMemoryDatabase::deleteEntity(std::shared_ptr<Entity> entity) {
+    std::scoped_lock lk{_mutex};
     const auto id = entity->getId();
     if (m_entities.contains(id)) {
         m_entities.erase(id);
@@ -46,6 +48,7 @@ bool InMemoryDatabase::deleteEntity(std::shared_ptr<Entity> entity) {
 }
 
 std::size_t InMemoryDatabase::addEntity(std::shared_ptr<Entity> entity) {
+    std::scoped_lock lk{_mutex};
     setEntityId(entity.get());
     const auto id = entity->getId();
     m_entities.emplace(id, std::move(entity));

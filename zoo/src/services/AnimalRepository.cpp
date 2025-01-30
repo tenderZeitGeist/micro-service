@@ -13,12 +13,13 @@ namespace zoo {
 AnimalRepository::AnimalRepository(std::shared_ptr<core::database::DatabaseInterface> database)
     : RepositoryInterface(std::move(database)){}
 
-std::vector<std::reference_wrapper<const Animal>> AnimalRepository::getAnimalsByIds(const std::vector<std::size_t>& ids) const {
-    const auto animals = getAllTargetEntities();
-    auto filteredView = animals | std::views::filter([&ids](auto animal) {
-        return std::ranges::any_of(ids, [animal](std::size_t id){ return animal.get().getId() == id; });
-    }) | std::views::common;
-    return {filteredView.begin(), filteredView.end()};
+std::vector<Animal> AnimalRepository::getAnimalsByIds(const std::vector<std::size_t>& ids) const {
+    auto animals = getAllTargetEntities();
+    const auto tail = std::ranges::partition(
+        animals,
+        [&ids](const Animal& animal) { return std::ranges::find(ids, animal.getId()) != ids.end(); }
+    );
+    return {std::make_move_iterator(animals.begin()), std::make_move_iterator(tail.begin())};
 }
 
 std::size_t AnimalRepository::addAnimal(std::shared_ptr<Animal> animal) const {

@@ -14,8 +14,10 @@ class Entity {
 public:
     virtual ~Entity() = default;
     [[nodiscard]] virtual std::size_t getId() const;
+
 protected:
     std::size_t m_id{};
+
 private:
     friend class core::database::DatabaseInterface;
     void setId(std::size_t id);

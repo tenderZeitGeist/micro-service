@@ -6,6 +6,7 @@
 
 #include <core/database/DatabaseInterface.hpp>
 
+#include <mutex>
 #include <unordered_map>
 
 namespace zoo::database {
@@ -24,6 +25,7 @@ public:
 private:
     void initCompound(std::string_view fileName);
     std::unordered_map<std::size_t, std::shared_ptr<core::database::Entity>> m_entities;
+    std::mutex _mutex;
 };
 
 }
